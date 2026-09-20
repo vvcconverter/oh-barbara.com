@@ -85,12 +85,22 @@
         <h2>Стрим</h2>
         <p>Just Chatting · IRL · ~2.3K на Twitch</p>
       </header>
-      <div class="stream-frame reveal">
-        <iframe
-          src="https://player.twitch.tv/?channel=oh_barbara&parent=localhost&parent=127.0.0.1&muted=true"
-          allowfullscreen
-          title="Twitch stream oh_barbara"
-        ></iframe>
+      <div class="stream-layout reveal">
+        <div class="stream-frame">
+          <iframe
+            data-twitch="player"
+            src="https://player.twitch.tv/?channel=oh_barbara&parent=localhost&parent=127.0.0.1&muted=true"
+            allowfullscreen
+            title="Twitch stream oh_barbara"
+          ></iframe>
+        </div>
+        <div class="stream-chat">
+          <iframe
+            data-twitch="chat"
+            src="https://www.twitch.tv/embed/oh_barbara/chat?parent=localhost&parent=127.0.0.1&darkpopout"
+            title="Twitch chat oh_barbara"
+          ></iframe>
+        </div>
       </div>
       <p class="stream-note reveal">
         Последний стрим: анпакинг на зп модели · Пхукет 🇹🇭

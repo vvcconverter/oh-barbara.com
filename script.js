@@ -46,11 +46,17 @@
   }
 
   // Twitch parent must match the host — fix embed when opened via file or custom host
-  const frame = document.querySelector(".stream-frame iframe");
-  if (frame) {
-    const host = location.hostname || "localhost";
-    const parents = new Set(["localhost", "127.0.0.1", "oh-barbara.com", "www.oh-barbara.com", host]);
-    const parentQuery = [...parents].map((p) => `parent=${encodeURIComponent(p)}`).join("&");
-    frame.src = `https://player.twitch.tv/?channel=oh_barbara&${parentQuery}&muted=true`;
+  const host = location.hostname || "localhost";
+  const parents = new Set(["localhost", "127.0.0.1", "oh-barbara.com", "www.oh-barbara.com", host]);
+  const parentQuery = [...parents].map((p) => `parent=${encodeURIComponent(p)}`).join("&");
+
+  const player = document.querySelector('[data-twitch="player"]');
+  if (player) {
+    player.src = `https://player.twitch.tv/?channel=oh_barbara&${parentQuery}&muted=true`;
+  }
+
+  const chat = document.querySelector('[data-twitch="chat"]');
+  if (chat) {
+    chat.src = `https://www.twitch.tv/embed/oh_barbara/chat?${parentQuery}&darkpopout`;
   }
 })();

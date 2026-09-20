@@ -417,23 +417,34 @@ main {
   background: linear-gradient(180deg, transparent, rgba(18, 48, 58, 0.55), transparent);
 }
 
-.stream-frame {
-  max-width: 1100px;
+.stream-layout {
+  max-width: 1200px;
   margin: 0 auto;
-  aspect-ratio: 16 / 9;
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 340px);
+  gap: 0.75rem;
+  align-items: stretch;
+  min-height: min(68vh, 620px);
+}
+
+.stream-frame,
+.stream-chat {
   background: #000;
   border: 1px solid var(--line);
   overflow: hidden;
+  min-height: 420px;
 }
 
-.stream-frame iframe {
+.stream-frame iframe,
+.stream-chat iframe {
   width: 100%;
   height: 100%;
   border: 0;
+  display: block;
 }
 
 .stream-note {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 1rem auto 0;
   color: var(--muted);
   font-size: 0.95rem;
@@ -509,6 +520,20 @@ main {
 
   .about-visual {
     order: -1;
+  }
+
+  .stream-layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .stream-frame {
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+  }
+
+  .stream-chat {
+    min-height: 360px;
   }
 
   .gallery-grid figure:nth-child(1),
