@@ -13,48 +13,6 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://oh-barbara.com/index.html#about</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://oh-barbara.com/index.html#gallery</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://oh-barbara.com/index.html#stream</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://oh-barbara.com/index.html#video-oh-barbara</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://oh-barbara.com/index.html#tags</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://oh-barbara.com/index.html#connect</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://oh-barbara.com/index.html#comments</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://oh-barbara.com/llms.txt</loc>
     <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
