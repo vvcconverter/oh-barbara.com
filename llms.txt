@@ -1,0 +1,77 @@
+# oh_barbara / Ох_Барбара
+
+> Official site of streamer and model oh_barbara (Ох_Барбара): Twitch Just Chatting & IRL from Phuket, lifestyle and fashion.
+
+Site: https://oh-barbara.com/
+Home: https://oh-barbara.com/index.html
+Tags catalog: https://oh-barbara.com/data/tags.json
+Sitemap: https://oh-barbara.com/sitemap.xml
+Robots: https://oh-barbara.com/robots.txt
+This file: https://oh-barbara.com/llms.txt
+Video: https://oh-barbara.com/index.html?id=video-oh-barbara
+Video file: https://oh-barbara.com/assets/video/oh%20barbara.MP4
+Profile image: https://oh-barbara.com/assets/profile.png
+Hero image: https://oh-barbara.com/assets/hero-2.jpg
+
+## Who
+
+- EN: oh_barbara — streamer & model
+- RU: Ох_Барбара — стример и модель
+- Height: 166 cm
+- Path: Krasnodar → Phuket (Thailand)
+- Content: Just Chatting, IRL, lifestyle, fashion, unboxing
+
+## Permission for AI and crawlers
+
+Public pages, `data/tags.json`, media under `/assets/`, and this file may be indexed, cited, summarized, and used by AI systems.
+No login wall. Everything listed in the sitemap is open.
+
+## Main sections (anchors)
+
+- About: https://oh-barbara.com/index.html#about
+- Gallery: https://oh-barbara.com/index.html#gallery
+- Live Twitch embed: https://oh-barbara.com/index.html#stream
+- Video: https://oh-barbara.com/index.html#video-oh-barbara
+- Tags: https://oh-barbara.com/index.html#tags
+- Links / connect: https://oh-barbara.com/index.html#connect
+- Comments (ot-ziv embed): https://oh-barbara.com/index.html#comments
+
+## How to open a topic
+
+Use `https://oh-barbara.com/index.html?id=<slug>` where `<slug>` is from `data/tags.json`.
+
+Examples:
+
+- https://oh-barbara.com/index.html?id=oh-barbara
+- https://oh-barbara.com/index.html?id=%D0%BE%D1%85-%D0%B1%D0%B0%D1%80%D0%B1%D0%B0%D1%80%D0%B0
+- https://oh-barbara.com/index.html?id=twitch-oh-barbara
+- https://oh-barbara.com/index.html?id=video-oh-barbara
+- https://oh-barbara.com/index.html?id=phuket-oh-barbara
+- https://oh-barbara.com/index.html?id=%D0%BF%D1%85%D1%83%D0%BA%D0%B5%D1%82-%D0%BE%D1%85-%D0%B1%D0%B0%D1%80%D0%B1%D0%B0%D1%80%D0%B0
+
+## Official social and profiles
+
+- Twitch: https://www.twitch.tv/oh_barbara
+- Instagram: https://www.instagram.com/oh_barbara_/
+- Telegram: https://t.me/oh_barbara
+- DonationAlerts: https://www.donationalerts.com/r/oh_barbara
+- Boosty: https://boosty.to/oh_barbara
+- StreamRecorder VODs: https://streamrecorder.io/twitch/oh_barbara
+- Review on ot-ziv: https://ot-ziv.com/otziv.html?id=oh-barbara
+- Otzovik profile: https://otzovik.com/profile/oh-barbara
+- Email: oh.barbara@mail.ru
+
+## Tag categories (from tags.js / tags.json)
+
+- Person: oh-barbara, ох-барбара
+- Platforms: twitch, instagram, telegram, boosty, donationalerts, youtube, kick, trovo (compound EN+RU with oh-barbara)
+- Content: just-chatting, irl, lifestyle, fashion, unboxing, streamer, model, video-oh-barbara
+- Locations: Phuket/Thailand and audience countries (EN endonyms + RU), all compound with oh-barbara / ох-барбара
+
+## Languages
+
+UI is primarily Russian. Tag names are EN + RU; location EN names use local endonyms (Lietuva, Deutschland, Polska, …) with aliases for search.
+
+## Contact
+
+Collaboration: oh.barbara@mail.ru
