@@ -167,22 +167,8 @@
         <h2>Стрим</h2>
         <p>Just Chatting · IRL · ~2.3K на Twitch</p>
       </header>
-      <div class="stream-layout reveal">
-        <div class="stream-frame">
-          <iframe
-            data-twitch="player"
-            src="https://player.twitch.tv/?channel=oh_barbara&parent=localhost&parent=127.0.0.1&muted=true"
-            allowfullscreen
-            title="Twitch stream oh_barbara"
-          ></iframe>
-        </div>
-        <div class="stream-chat">
-          <iframe
-            data-twitch="chat"
-            src="https://www.twitch.tv/embed/oh_barbara/chat?parent=localhost&parent=127.0.0.1&darkpopout"
-            title="Twitch chat oh_barbara"
-          ></iframe>
-        </div>
+      <div class="stream-embed reveal">
+        <div id="twitch-embed"></div>
       </div>
       <p class="stream-note reveal">
         Последний стрим: анпакинг на зп модели · Пхукет 🇹🇭
@@ -324,6 +310,7 @@
     <p class="footer-tags"><a href="data/tags.json">tags.json</a></p>
   </footer>
 
+  <script src="https://embed.twitch.tv/embed/v1.js"></script>
   <script src="tags.js"></script>
   <script src="script.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>

@@ -56,17 +56,23 @@
   }
 
   const host = location.hostname || "localhost";
-  const parents = new Set(["localhost", "127.0.0.1", "oh-barbara.com", "www.oh-barbara.com", host]);
-  const parentQuery = [...parents].map((p) => `parent=${encodeURIComponent(p)}`).join("&");
+  const parents = ["localhost", "127.0.0.1", "oh-barbara.com", "www.oh-barbara.com"];
+  if (parents.indexOf(host) === -1) parents.push(host);
 
-  const player = document.querySelector('[data-twitch="player"]');
-  if (player) {
-    player.src = `https://player.twitch.tv/?channel=oh_barbara&${parentQuery}&muted=true`;
-  }
-
-  const chat = document.querySelector('[data-twitch="chat"]');
-  if (chat) {
-    chat.src = `https://www.twitch.tv/embed/oh_barbara/chat?${parentQuery}&darkpopout`;
+  const embedRoot = document.getElementById("twitch-embed");
+  if (embedRoot && window.Twitch && Twitch.Embed) {
+    const w = Math.max(400, Math.floor(embedRoot.clientWidth || 960));
+    const h = Math.max(300, Math.min(620, Math.round(w * 0.56) + (w >= 800 ? 0 : 320)));
+    new Twitch.Embed("twitch-embed", {
+      width: "100%",
+      height: Math.max(480, Math.min(680, h)),
+      channel: "oh_barbara",
+      layout: "video-with-chat",
+      theme: "dark",
+      muted: true,
+      autoplay: true,
+      parent: parents,
+    });
   }
 
   function esc(s) {
