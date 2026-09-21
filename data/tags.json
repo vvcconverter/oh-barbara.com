@@ -1,6 +1,13 @@
 [
   { "slug": "oh-barbara", "name": "oh_barbara" },
   { "slug": "ох-барбара", "name": "Ох_Барбара" },
+  { "slug": "oh-barbara_about", "name": "О себе oh_barbara" },
+  { "slug": "oh-barbara_gallery", "name": "Галерея oh_barbara" },
+  { "slug": "oh-barbara_stream", "name": "Стрим oh_barbara" },
+  { "slug": "oh-barbara_video", "name": "Видео oh_barbara" },
+  { "slug": "oh-barbara_tags", "name": "Теги oh_barbara" },
+  { "slug": "oh-barbara_connect", "name": "Связь oh_barbara" },
+  { "slug": "oh-barbara_comments", "name": "Комментарии oh_barbara" },
   { "slug": "twitch-oh-barbara", "name": "Twitch oh_barbara" },
   { "slug": "твич-ох-барбара", "name": "Твич Ох_Барбара" },
   { "slug": "instagram-oh-barbara", "name": "Instagram oh_barbara" },

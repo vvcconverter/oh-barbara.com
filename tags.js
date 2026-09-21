@@ -130,6 +130,15 @@
       { slug: "oh-barbara", name: "oh_barbara" },
       { slug: "ох-барбара", name: "Ох_Барбара" },
     ],
+    Разделы: [
+      { slug: "oh-barbara_about", name: "О себе oh_barbara" },
+      { slug: "oh-barbara_gallery", name: "Галерея oh_barbara" },
+      { slug: "oh-barbara_stream", name: "Стрим oh_barbara" },
+      { slug: "oh-barbara_video", name: "Видео oh_barbara" },
+      { slug: "oh-barbara_tags", name: "Теги oh_barbara" },
+      { slug: "oh-barbara_connect", name: "Связь oh_barbara" },
+      { slug: "oh-barbara_comments", name: "Комментарии oh_barbara" },
+    ],
   };
 
   var ALIAS = {
@@ -143,6 +152,21 @@
     ox_barbara: "oh-barbara",
     "ох_barbara": "ох-барбара",
     "ox-barbara": "oh-barbara",
+
+    "oh-barbara-about": "oh-barbara_about",
+    "oh-barbara-gallery": "oh-barbara_gallery",
+    "oh-barbara-stream": "oh-barbara_stream",
+    "oh-barbara-video": "oh-barbara_video",
+    "oh-barbara-tags": "oh-barbara_tags",
+    "oh-barbara-connect": "oh-barbara_connect",
+    "oh-barbara-comments": "oh-barbara_comments",
+    about: "oh-barbara_about",
+    gallery: "oh-barbara_gallery",
+    stream: "oh-barbara_stream",
+    video: "oh-barbara_video",
+    tags: "oh-barbara_tags",
+    connect: "oh-barbara_connect",
+    comments: "oh-barbara_comments",
 
     twitch: "twitch-oh-barbara",
     твич: "твич-ох-барбара",
@@ -512,6 +536,13 @@
       "сша-ох-барбара": "Аудитория в США — Ох_Барбара.",
       "oh-barbara": "oh_barbara — streamer & model from Phuket.",
       "ох-барбара": "Ох_Барбара — стример и модель из Пхукета.",
+      "oh-barbara_about": "О себе — oh_barbara / Ох_Барбара.",
+      "oh-barbara_gallery": "Галерея — lifestyle & fashion oh_barbara.",
+      "oh-barbara_stream": "Стрим Twitch — oh_barbara.",
+      "oh-barbara_video": "Видео — oh_barbara.",
+      "oh-barbara_tags": "Теги страницы oh_barbara.",
+      "oh-barbara_connect": "Связь и площадки oh_barbara.",
+      "oh-barbara_comments": "Комментарии к отзыву oh-barbara на ot-ziv.",
     };
     if (leads[id]) return leads[id];
     var name = tagName(id);

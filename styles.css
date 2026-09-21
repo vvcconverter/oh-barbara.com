@@ -302,8 +302,12 @@ main {
   line-height: 1;
 }
 
+.about h2 {
+  margin: 0 0 2.2rem;
+}
+
 .about-tag {
-  margin: 0.7rem 0 1.2rem;
+  margin: 0 0 1.8rem;
   color: var(--teal);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -465,7 +469,13 @@ main {
   background: #000;
 }
 
-#video-oh-barbara {
+#video,
+#about,
+#gallery,
+#stream,
+#tags,
+#connect,
+#comments {
   scroll-margin-top: 5.5rem;
 }
 
@@ -969,10 +979,10 @@ main {
 }
 
 section[data-tags].ob-dim,
-li[data-tags].ob-dim {
-  opacity: 0.38;
-  filter: saturate(0.7);
-  transition: opacity 0.25s ease, filter 0.25s ease;
+li[data-tags].ob-dim,
+aside[data-tags].ob-dim {
+  opacity: 0.72;
+  transition: opacity 0.25s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {

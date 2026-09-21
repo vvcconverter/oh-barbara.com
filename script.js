@@ -139,7 +139,7 @@
     });
 
     document.querySelectorAll("[data-tags]").forEach((el) => {
-      if (!id) {
+      if (!id || /_about$|_gallery$|_stream$|_video$|_tags$|_connect$|_comments$/.test(id)) {
         el.classList.remove("ob-dim");
         return;
       }
@@ -199,8 +199,14 @@
     setAttr("ob-canon", "href", pageUrl);
     setMeta("ob-og-url", pageUrl);
 
-    const anchor = document.getElementById(id);
-    if (anchor) anchor.scrollIntoView({ block: "start" });
+    const secMatch = String(id).match(/_(about|gallery|stream|video|tags|connect|comments)$/);
+    const anchorId = secMatch ? secMatch[1] : id === "video-oh-barbara" ? "video" : id;
+    const anchor = document.getElementById(anchorId);
+    if (anchor) {
+      requestAnimationFrame(function () {
+        anchor.scrollIntoView({ block: "start" });
+      });
+    }
 
     setJsonLd("ob-ld-tagpage", {
       "@context": "https://schema.org",
@@ -313,7 +319,7 @@
     }
   }
 
-  function wireCatDrops(activeId) {
+  function wireCatDrops() {
     const roots = [document.getElementById("tagCloud"), document.getElementById("ob-hero-tags")].filter(Boolean);
     const drops = roots.flatMap((root) => Array.from(root.querySelectorAll(".cat-drop")));
     if (!drops.length) return;
@@ -362,19 +368,12 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeAll();
     });
-
-    if (activeId) {
-      const hit = drops.find((wrap) =>
-        wrap.querySelector('[data-tag-slug="' + activeId.replace(/"/g, "") + '"]')
-      );
-      if (hit) setOpen(hit, true);
-    }
   }
 
   function boot() {
     const id = currentId();
     renderTagCloud();
-    wireCatDrops(id);
+    wireCatDrops();
     applyTagFilter(id);
   }
 
