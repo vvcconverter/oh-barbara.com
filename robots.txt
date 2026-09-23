@@ -81,4 +81,4 @@ User-agent: ia_archiver
 Allow: /
 
 Sitemap: https://oh-barbara.com/sitemap.xml
-LLMs-Txt: https://oh-barbara.com/llms.txt
+# llms.txt: https://oh-barbara.com/llms.txt
