@@ -1,133 +1,1186 @@
 [
-  { "slug": "oh-barbara", "name": "oh_barbara" },
-  { "slug": "ох-барбара", "name": "Ох_Барбара" },
-  { "slug": "oh-barbara_about", "name": "О себе oh_barbara" },
-  { "slug": "oh-barbara_gallery", "name": "Галерея oh_barbara" },
-  { "slug": "oh-barbara_stream", "name": "Стрим oh_barbara" },
-  { "slug": "oh-barbara_clips", "name": "Клипы oh_barbara" },
-  { "slug": "oh-barbara_video", "name": "Видео oh_barbara" },
-  { "slug": "oh-barbara_tags", "name": "Теги oh_barbara" },
-  { "slug": "oh-barbara_connect", "name": "Связь oh_barbara" },
-  { "slug": "oh-barbara_comments", "name": "Комментарии oh_barbara" },
-  { "slug": "twitch-oh-barbara", "name": "Twitch oh_barbara" },
-  { "slug": "твич-ох-барбара", "name": "Твич Ох_Барбара" },
-  { "slug": "instagram-oh-barbara", "name": "Instagram oh_barbara" },
-  { "slug": "инстаграм-ох-барбара", "name": "Инстаграм Ох_Барбара" },
-  { "slug": "telegram-oh-barbara", "name": "Telegram oh_barbara" },
-  { "slug": "телеграм-ох-барбара", "name": "Телеграм Ох_Барбара" },
-  { "slug": "boosty-oh-barbara", "name": "Boosty oh_barbara" },
-  { "slug": "бусти-ох-барбара", "name": "Бусти Ох_Барбара" },
-  { "slug": "donationalerts-oh-barbara", "name": "DonationAlerts oh_barbara" },
-  { "slug": "донат-ох-барбара", "name": "Донат Ох_Барбара" },
-  { "slug": "youtube-oh-barbara", "name": "YouTube oh_barbara" },
-  { "slug": "ютуб-ох-барбара", "name": "Ютуб Ох_Барбара" },
-  { "slug": "youtube-barbara-oh", "name": "YouTube oh_barbara" },
-  { "slug": "kick-oh-barbara", "name": "Kick oh_barbara" },
-  { "slug": "кик-ох-барбара", "name": "Kick Ох_Барбара" },
-  { "slug": "trovo-oh-barbara", "name": "Trovo oh_barbara" },
-  { "slug": "трово-ох-барбара", "name": "Trovo Ох_Барбара" },
-  { "slug": "just-chatting-oh-barbara", "name": "Just Chatting oh_barbara" },
-  { "slug": "джест-чатинг-ох-барбара", "name": "Just Chatting Ох_Барбара" },
-  { "slug": "irl-oh-barbara", "name": "IRL oh_barbara" },
-  { "slug": "ирл-ох-барбара", "name": "IRL Ох_Барбара" },
-  { "slug": "lifestyle-oh-barbara", "name": "Lifestyle oh_barbara" },
-  { "slug": "лайфстайл-ох-барбара", "name": "Лайфстайл Ох_Барбара" },
-  { "slug": "fashion-oh-barbara", "name": "Fashion oh_barbara" },
-  { "slug": "фешен-ох-барбара", "name": "Fashion Ох_Барбара" },
-  { "slug": "unboxing-oh-barbara", "name": "Unboxing oh_barbara" },
-  { "slug": "анпакинг-ох-барбара", "name": "Анпакинг Ох_Барбара" },
-  { "slug": "streamer-oh-barbara", "name": "streamer oh_barbara" },
-  { "slug": "стример-oh-barbara", "name": "стример oh_barbara" },
-  { "slug": "стример-ох-барбара", "name": "стример Ох_Барбара" },
-  { "slug": "model-oh-barbara", "name": "model oh_barbara" },
-  { "slug": "модель-ох-барбара", "name": "модель Ох_Барбара" },
-  { "slug": "video-oh-barbara", "name": "video oh_barbara" },
-  { "slug": "phuket-oh-barbara", "name": "Phuket oh_barbara" },
-  { "slug": "пхукет-ох-барбара", "name": "Пхукет Ох_Барбара" },
-  { "slug": "thailand-oh-barbara", "name": "ประเทศไทย oh_barbara" },
-  { "slug": "таиланд-ох-барбара", "name": "Таиланд Ох_Барбара" },
-  { "slug": "russia-oh-barbara", "name": "Russia oh_barbara" },
-  { "slug": "россия-ох-барбара", "name": "Россия Ох_Барбара" },
-  { "slug": "kazakhstan-oh-barbara", "name": "Qazaqstan oh_barbara" },
-  { "slug": "казахстан-ох-барбара", "name": "Казахстан Ох_Барбара" },
-  { "slug": "belarus-oh-barbara", "name": "Bielaruś oh_barbara" },
-  { "slug": "беларусь-ох-барбара", "name": "Беларусь Ох_Барбара" },
-  { "slug": "ukraine-oh-barbara", "name": "Україна oh_barbara" },
-  { "slug": "украина-ох-барбара", "name": "Украина Ох_Барбара" },
-  { "slug": "uzbekistan-oh-barbara", "name": "Oʻzbekiston oh_barbara" },
-  { "slug": "узбекистан-ох-барбара", "name": "Узбекистан Ох_Барбара" },
-  { "slug": "armenia-oh-barbara", "name": "Hayastan oh_barbara" },
-  { "slug": "армения-ох-барбара", "name": "Армения Ох_Барбара" },
-  { "slug": "azerbaijan-oh-barbara", "name": "Azərbaycan oh_barbara" },
-  { "slug": "азербайджан-ох-барбара", "name": "Азербайджан Ох_Барбара" },
-  { "slug": "georgia-oh-barbara", "name": "Sakartvelo oh_barbara" },
-  { "slug": "грузия-ох-барбара", "name": "Грузия Ох_Барбара" },
-  { "slug": "kyrgyzstan-oh-barbara", "name": "Kyrgyzstan oh_barbara" },
-  { "slug": "кыргызстан-ох-барбара", "name": "Кыргызстан Ох_Барбара" },
-  { "slug": "moldova-oh-barbara", "name": "Moldova oh_barbara" },
-  { "slug": "молдова-ох-барбара", "name": "Молдова Ох_Барбара" },
-  { "slug": "tajikistan-oh-barbara", "name": "Tojikiston oh_barbara" },
-  { "slug": "таджикистан-ох-барбара", "name": "Таджикистан Ох_Барбара" },
-  { "slug": "turkmenistan-oh-barbara", "name": "Türkmenistan oh_barbara" },
-  { "slug": "туркменистан-ох-барбара", "name": "Туркменистан Ох_Барбара" },
-  { "slug": "krasnodar-oh-barbara", "name": "Krasnodar oh_barbara" },
-  { "slug": "краснодар-ох-барбара", "name": "Краснодар Ох_Барбара" },
-  { "slug": "germany-oh-barbara", "name": "Deutschland oh_barbara" },
-  { "slug": "германия-ох-барбара", "name": "Германия Ох_Барбара" },
-  { "slug": "france-oh-barbara", "name": "France oh_barbara" },
-  { "slug": "франция-ох-барбара", "name": "Франция Ох_Барбара" },
-  { "slug": "italy-oh-barbara", "name": "Italia oh_barbara" },
-  { "slug": "италия-ох-барбара", "name": "Италия Ох_Барбара" },
-  { "slug": "spain-oh-barbara", "name": "España oh_barbara" },
-  { "slug": "испания-ох-барбара", "name": "Испания Ох_Барбара" },
-  { "slug": "poland-oh-barbara", "name": "Polska oh_barbara" },
-  { "slug": "польша-ох-барбара", "name": "Польша Ох_Барбара" },
-  { "slug": "czech-oh-barbara", "name": "Česko oh_barbara" },
-  { "slug": "чехия-ох-барбара", "name": "Чехия Ох_Барбара" },
-  { "slug": "netherlands-oh-barbara", "name": "Nederland oh_barbara" },
-  { "slug": "нидерланды-ох-барбара", "name": "Нидерланды Ох_Барбара" },
-  { "slug": "belgium-oh-barbara", "name": "België oh_barbara" },
-  { "slug": "бельгия-ох-барбара", "name": "Бельгия Ох_Барбара" },
-  { "slug": "austria-oh-barbara", "name": "Österreich oh_barbara" },
-  { "slug": "австрия-ох-барбара", "name": "Австрия Ох_Барбара" },
-  { "slug": "switzerland-oh-barbara", "name": "Schweiz oh_barbara" },
-  { "slug": "швейцария-ох-барбара", "name": "Швейцария Ох_Барбара" },
-  { "slug": "uk-oh-barbara", "name": "United Kingdom oh_barbara" },
-  { "slug": "великобритания-ох-барбара", "name": "Великобритания Ох_Барбара" },
-  { "slug": "portugal-oh-barbara", "name": "Portugal oh_barbara" },
-  { "slug": "португалия-ох-барбара", "name": "Португалия Ох_Барбара" },
-  { "slug": "greece-oh-barbara", "name": "Ελλάδα oh_barbara" },
-  { "slug": "греция-ох-барбара", "name": "Греция Ох_Барбара" },
-  { "slug": "sweden-oh-barbara", "name": "Sverige oh_barbara" },
-  { "slug": "швеция-ох-барбара", "name": "Швеция Ох_Барбара" },
-  { "slug": "norway-oh-barbara", "name": "Norge oh_barbara" },
-  { "slug": "норвегия-ох-барбара", "name": "Норвегия Ох_Барбара" },
-  { "slug": "finland-oh-barbara", "name": "Suomi oh_barbara" },
-  { "slug": "финляндия-ох-барбара", "name": "Финляндия Ох_Барбара" },
-  { "slug": "denmark-oh-barbara", "name": "Danmark oh_barbara" },
-  { "slug": "дания-ох-барбара", "name": "Дания Ох_Барбара" },
-  { "slug": "romania-oh-barbara", "name": "România oh_barbara" },
-  { "slug": "румыния-ох-барбара", "name": "Румыния Ох_Барбара" },
-  { "slug": "hungary-oh-barbara", "name": "Magyarország oh_barbara" },
-  { "slug": "венгрия-ох-барбара", "name": "Венгрия Ох_Барбара" },
-  { "slug": "bulgaria-oh-barbara", "name": "България oh_barbara" },
-  { "slug": "болгария-ох-барбара", "name": "Болгария Ох_Барбара" },
-  { "slug": "serbia-oh-barbara", "name": "Srbija oh_barbara" },
-  { "slug": "сербия-ох-барбара", "name": "Сербия Ох_Барбара" },
-  { "slug": "croatia-oh-barbara", "name": "Hrvatska oh_barbara" },
-  { "slug": "хорватия-ох-барбара", "name": "Хорватия Ох_Барбара" },
-  { "slug": "slovakia-oh-barbara", "name": "Slovensko oh_barbara" },
-  { "slug": "словакия-ох-барбара", "name": "Словакия Ох_Барбара" },
-  { "slug": "slovenia-oh-barbara", "name": "Slovenija oh_barbara" },
-  { "slug": "словения-ох-барбара", "name": "Словения Ох_Барбара" },
-  { "slug": "lithuania-oh-barbara", "name": "Lietuva oh_barbara" },
-  { "slug": "литва-ох-барбара", "name": "Литва Ох_Барбара" },
-  { "slug": "latvia-oh-barbara", "name": "Latvija oh_barbara" },
-  { "slug": "латвия-ох-барбара", "name": "Латвия Ох_Барбара" },
-  { "slug": "estonia-oh-barbara", "name": "Eesti oh_barbara" },
-  { "slug": "эстония-ох-барбара", "name": "Эстония Ох_Барбара" },
-  { "slug": "ireland-oh-barbara", "name": "Éire oh_barbara" },
-  { "slug": "ирландия-ох-барбара", "name": "Ирландия Ох_Барбара" },
-  { "slug": "usa-oh-barbara", "name": "USA oh_barbara" },
-  { "slug": "сша-ох-барбара", "name": "США Ох_Барбара" }
+  {
+    "slug": "oh-barbara",
+    "name": "oh_barbara"
+  },
+  {
+    "slug": "ох-барбара",
+    "name": "Ох_Барбара"
+  },
+  {
+    "slug": "oh-barbara_about",
+    "name": "О себе oh_barbara"
+  },
+  {
+    "slug": "oh-barbara_gallery",
+    "name": "Галерея oh_barbara"
+  },
+  {
+    "slug": "oh-barbara_stream",
+    "name": "Стрим oh_barbara"
+  },
+  {
+    "slug": "oh-barbara_clips",
+    "name": "Клипы oh_barbara"
+  },
+  {
+    "slug": "oh-barbara_video",
+    "name": "Видео oh_barbara"
+  },
+  {
+    "slug": "oh-barbara_tags",
+    "name": "Теги oh_barbara"
+  },
+  {
+    "slug": "oh-barbara_connect",
+    "name": "Связь oh_barbara"
+  },
+  {
+    "slug": "oh-barbara_comments",
+    "name": "Комментарии oh_barbara"
+  },
+  {
+    "slug": "twitch-oh-barbara",
+    "name": "Twitch oh_barbara"
+  },
+  {
+    "slug": "твич-ох-барбара",
+    "name": "Твич Ох_Барбара"
+  },
+  {
+    "slug": "instagram-oh-barbara",
+    "name": "Instagram oh_barbara"
+  },
+  {
+    "slug": "инстаграм-ох-барбара",
+    "name": "Инстаграм Ох_Барбара"
+  },
+  {
+    "slug": "telegram-oh-barbara",
+    "name": "Telegram oh_barbara"
+  },
+  {
+    "slug": "телеграм-ох-барбара",
+    "name": "Телеграм Ох_Барбара"
+  },
+  {
+    "slug": "boosty-oh-barbara",
+    "name": "Boosty oh_barbara"
+  },
+  {
+    "slug": "бусти-ох-барбара",
+    "name": "Бусти Ох_Барбара"
+  },
+  {
+    "slug": "donationalerts-oh-barbara",
+    "name": "DonationAlerts oh_barbara"
+  },
+  {
+    "slug": "донат-ох-барбара",
+    "name": "Донат Ох_Барбара"
+  },
+  {
+    "slug": "youtube-oh-barbara",
+    "name": "YouTube oh_barbara"
+  },
+  {
+    "slug": "ютуб-ох-барбара",
+    "name": "Ютуб Ох_Барбара"
+  },
+  {
+    "slug": "youtube-barbara-oh",
+    "name": "YouTube oh_barbara"
+  },
+  {
+    "slug": "kick-oh-barbara",
+    "name": "Kick oh_barbara"
+  },
+  {
+    "slug": "кик-ох-барбара",
+    "name": "Kick Ох_Барбара"
+  },
+  {
+    "slug": "trovo-oh-barbara",
+    "name": "Trovo oh_barbara"
+  },
+  {
+    "slug": "трово-ох-барбара",
+    "name": "Trovo Ох_Барбара"
+  },
+  {
+    "slug": "just-chatting-oh-barbara",
+    "name": "Just Chatting oh_barbara"
+  },
+  {
+    "slug": "джест-чатинг-ох-барбара",
+    "name": "Just Chatting Ох_Барбара"
+  },
+  {
+    "slug": "irl-oh-barbara",
+    "name": "IRL oh_barbara"
+  },
+  {
+    "slug": "ирл-ох-барбара",
+    "name": "IRL Ох_Барбара"
+  },
+  {
+    "slug": "lifestyle-oh-barbara",
+    "name": "Lifestyle oh_barbara"
+  },
+  {
+    "slug": "лайфстайл-ох-барбара",
+    "name": "Лайфстайл Ох_Барбара"
+  },
+  {
+    "slug": "fashion-oh-barbara",
+    "name": "Fashion oh_barbara"
+  },
+  {
+    "slug": "фешен-ох-барбара",
+    "name": "Fashion Ох_Барбара"
+  },
+  {
+    "slug": "unboxing-oh-barbara",
+    "name": "Unboxing oh_barbara"
+  },
+  {
+    "slug": "анпакинг-ох-барбара",
+    "name": "Анпакинг Ох_Барбара"
+  },
+  {
+    "slug": "streamer-oh-barbara",
+    "name": "streamer oh_barbara"
+  },
+  {
+    "slug": "стример-oh-barbara",
+    "name": "стример oh_barbara"
+  },
+  {
+    "slug": "стример-ох-барбара",
+    "name": "стример Ох_Барбара"
+  },
+  {
+    "slug": "model-oh-barbara",
+    "name": "model oh_barbara"
+  },
+  {
+    "slug": "модель-ох-барбара",
+    "name": "модель Ох_Барбара"
+  },
+  {
+    "slug": "video-oh-barbara",
+    "name": "video oh_barbara"
+  },
+  {
+    "slug": "phuket-oh-barbara",
+    "name": "Phuket oh_barbara"
+  },
+  {
+    "slug": "пхукет-ох-барбара",
+    "name": "Пхукет Ох_Барбара"
+  },
+  {
+    "slug": "thailand-oh-barbara",
+    "name": "ประเทศไทย oh_barbara"
+  },
+  {
+    "slug": "таиланд-ох-барбара",
+    "name": "Таиланд Ох_Барбара"
+  },
+  {
+    "slug": "russia-oh-barbara",
+    "name": "Russia oh_barbara"
+  },
+  {
+    "slug": "россия-ох-барбара",
+    "name": "Россия Ох_Барбара"
+  },
+  {
+    "slug": "kazakhstan-oh-barbara",
+    "name": "Qazaqstan oh_barbara"
+  },
+  {
+    "slug": "казахстан-ох-барбара",
+    "name": "Казахстан Ох_Барбара"
+  },
+  {
+    "slug": "belarus-oh-barbara",
+    "name": "Bielaruś oh_barbara"
+  },
+  {
+    "slug": "беларусь-ох-барбара",
+    "name": "Беларусь Ох_Барбара"
+  },
+  {
+    "slug": "ukraine-oh-barbara",
+    "name": "Україна oh_barbara"
+  },
+  {
+    "slug": "украина-ох-барбара",
+    "name": "Украина Ох_Барбара"
+  },
+  {
+    "slug": "uzbekistan-oh-barbara",
+    "name": "Oʻzbekiston oh_barbara"
+  },
+  {
+    "slug": "узбекистан-ох-барбара",
+    "name": "Узбекистан Ох_Барбара"
+  },
+  {
+    "slug": "armenia-oh-barbara",
+    "name": "Hayastan oh_barbara"
+  },
+  {
+    "slug": "армения-ох-барбара",
+    "name": "Армения Ох_Барбара"
+  },
+  {
+    "slug": "azerbaijan-oh-barbara",
+    "name": "Azərbaycan oh_barbara"
+  },
+  {
+    "slug": "азербайджан-ох-барбара",
+    "name": "Азербайджан Ох_Барбара"
+  },
+  {
+    "slug": "georgia-oh-barbara",
+    "name": "Sakartvelo oh_barbara"
+  },
+  {
+    "slug": "грузия-ох-барбара",
+    "name": "Грузия Ох_Барбара"
+  },
+  {
+    "slug": "kyrgyzstan-oh-barbara",
+    "name": "Kyrgyzstan oh_barbara"
+  },
+  {
+    "slug": "кыргызстан-ох-барбара",
+    "name": "Кыргызстан Ох_Барбара"
+  },
+  {
+    "slug": "moldova-oh-barbara",
+    "name": "Moldova oh_barbara"
+  },
+  {
+    "slug": "молдова-ох-барбара",
+    "name": "Молдова Ох_Барбара"
+  },
+  {
+    "slug": "tajikistan-oh-barbara",
+    "name": "Tojikiston oh_barbara"
+  },
+  {
+    "slug": "таджикистан-ох-барбара",
+    "name": "Таджикистан Ох_Барбара"
+  },
+  {
+    "slug": "turkmenistan-oh-barbara",
+    "name": "Türkmenistan oh_barbara"
+  },
+  {
+    "slug": "туркменистан-ох-барбара",
+    "name": "Туркменистан Ох_Барбара"
+  },
+  {
+    "slug": "krasnodar-oh-barbara",
+    "name": "Krasnodar oh_barbara"
+  },
+  {
+    "slug": "краснодар-ох-барбара",
+    "name": "Краснодар Ох_Барбара"
+  },
+  {
+    "slug": "germany-oh-barbara",
+    "name": "Deutschland oh_barbara"
+  },
+  {
+    "slug": "германия-ох-барбара",
+    "name": "Германия Ох_Барбара"
+  },
+  {
+    "slug": "france-oh-barbara",
+    "name": "France oh_barbara"
+  },
+  {
+    "slug": "франция-ох-барбара",
+    "name": "Франция Ох_Барбара"
+  },
+  {
+    "slug": "italy-oh-barbara",
+    "name": "Italia oh_barbara"
+  },
+  {
+    "slug": "италия-ох-барбара",
+    "name": "Италия Ох_Барбара"
+  },
+  {
+    "slug": "spain-oh-barbara",
+    "name": "España oh_barbara"
+  },
+  {
+    "slug": "испания-ох-барбара",
+    "name": "Испания Ох_Барбара"
+  },
+  {
+    "slug": "poland-oh-barbara",
+    "name": "Polska oh_barbara"
+  },
+  {
+    "slug": "польша-ох-барбара",
+    "name": "Польша Ох_Барбара"
+  },
+  {
+    "slug": "czech-oh-barbara",
+    "name": "Česko oh_barbara"
+  },
+  {
+    "slug": "чехия-ох-барбара",
+    "name": "Чехия Ох_Барбара"
+  },
+  {
+    "slug": "netherlands-oh-barbara",
+    "name": "Nederland oh_barbara"
+  },
+  {
+    "slug": "нидерланды-ох-барбара",
+    "name": "Нидерланды Ох_Барбара"
+  },
+  {
+    "slug": "belgium-oh-barbara",
+    "name": "België oh_barbara"
+  },
+  {
+    "slug": "бельгия-ох-барбара",
+    "name": "Бельгия Ох_Барбара"
+  },
+  {
+    "slug": "austria-oh-barbara",
+    "name": "Österreich oh_barbara"
+  },
+  {
+    "slug": "австрия-ох-барбара",
+    "name": "Австрия Ох_Барбара"
+  },
+  {
+    "slug": "switzerland-oh-barbara",
+    "name": "Schweiz oh_barbara"
+  },
+  {
+    "slug": "швейцария-ох-барбара",
+    "name": "Швейцария Ох_Барбара"
+  },
+  {
+    "slug": "uk-oh-barbara",
+    "name": "United Kingdom oh_barbara"
+  },
+  {
+    "slug": "великобритания-ох-барбара",
+    "name": "Великобритания Ох_Барбара"
+  },
+  {
+    "slug": "portugal-oh-barbara",
+    "name": "Portugal oh_barbara"
+  },
+  {
+    "slug": "португалия-ох-барбара",
+    "name": "Португалия Ох_Барбара"
+  },
+  {
+    "slug": "greece-oh-barbara",
+    "name": "Ελλάδα oh_barbara"
+  },
+  {
+    "slug": "греция-ох-барбара",
+    "name": "Греция Ох_Барбара"
+  },
+  {
+    "slug": "sweden-oh-barbara",
+    "name": "Sverige oh_barbara"
+  },
+  {
+    "slug": "швеция-ох-барбара",
+    "name": "Швеция Ох_Барбара"
+  },
+  {
+    "slug": "norway-oh-barbara",
+    "name": "Norge oh_barbara"
+  },
+  {
+    "slug": "норвегия-ох-барбара",
+    "name": "Норвегия Ох_Барбара"
+  },
+  {
+    "slug": "finland-oh-barbara",
+    "name": "Suomi oh_barbara"
+  },
+  {
+    "slug": "финляндия-ох-барбара",
+    "name": "Финляндия Ох_Барбара"
+  },
+  {
+    "slug": "denmark-oh-barbara",
+    "name": "Danmark oh_barbara"
+  },
+  {
+    "slug": "дания-ох-барбара",
+    "name": "Дания Ох_Барбара"
+  },
+  {
+    "slug": "romania-oh-barbara",
+    "name": "România oh_barbara"
+  },
+  {
+    "slug": "румыния-ох-барбара",
+    "name": "Румыния Ох_Барбара"
+  },
+  {
+    "slug": "hungary-oh-barbara",
+    "name": "Magyarország oh_barbara"
+  },
+  {
+    "slug": "венгрия-ох-барбара",
+    "name": "Венгрия Ох_Барбара"
+  },
+  {
+    "slug": "bulgaria-oh-barbara",
+    "name": "България oh_barbara"
+  },
+  {
+    "slug": "болгария-ох-барбара",
+    "name": "Болгария Ох_Барбара"
+  },
+  {
+    "slug": "serbia-oh-barbara",
+    "name": "Srbija oh_barbara"
+  },
+  {
+    "slug": "сербия-ох-барбара",
+    "name": "Сербия Ох_Барбара"
+  },
+  {
+    "slug": "croatia-oh-barbara",
+    "name": "Hrvatska oh_barbara"
+  },
+  {
+    "slug": "хорватия-ох-барбара",
+    "name": "Хорватия Ох_Барбара"
+  },
+  {
+    "slug": "slovakia-oh-barbara",
+    "name": "Slovensko oh_barbara"
+  },
+  {
+    "slug": "словакия-ох-барбара",
+    "name": "Словакия Ох_Барбара"
+  },
+  {
+    "slug": "slovenia-oh-barbara",
+    "name": "Slovenija oh_barbara"
+  },
+  {
+    "slug": "словения-ох-барбара",
+    "name": "Словения Ох_Барбара"
+  },
+  {
+    "slug": "lithuania-oh-barbara",
+    "name": "Lietuva oh_barbara"
+  },
+  {
+    "slug": "литва-ох-барбара",
+    "name": "Литва Ох_Барбара"
+  },
+  {
+    "slug": "latvia-oh-barbara",
+    "name": "Latvija oh_barbara"
+  },
+  {
+    "slug": "латвия-ох-барбара",
+    "name": "Латвия Ох_Барбара"
+  },
+  {
+    "slug": "estonia-oh-barbara",
+    "name": "Eesti oh_barbara"
+  },
+  {
+    "slug": "эстония-ох-барбара",
+    "name": "Эстония Ох_Барбара"
+  },
+  {
+    "slug": "ireland-oh-barbara",
+    "name": "Éire oh_barbara"
+  },
+  {
+    "slug": "ирландия-ох-барбара",
+    "name": "Ирландия Ох_Барбара"
+  },
+  {
+    "slug": "usa-oh-barbara",
+    "name": "USA oh_barbara"
+  },
+  {
+    "slug": "сша-ох-барбара",
+    "name": "США Ох_Барбара"
+  },
+  {
+    "slug": "думали",
+    "name": "Думали"
+  },
+  {
+    "slug": "перцем",
+    "name": "Перцем"
+  },
+  {
+    "slug": "дрочу",
+    "name": "Дрочу"
+  },
+  {
+    "slug": "доза",
+    "name": "Доза"
+  },
+  {
+    "slug": "кринжа",
+    "name": "Кринжа"
+  },
+  {
+    "slug": "мяу",
+    "name": "Мяу"
+  },
+  {
+    "slug": "мяууууууу",
+    "name": "Мяууууууу"
+  },
+  {
+    "slug": "учёба",
+    "name": "Учёба"
+  },
+  {
+    "slug": "нет",
+    "name": "Нет"
+  },
+  {
+    "slug": "уборка",
+    "name": "Уборка"
+  },
+  {
+    "slug": "бля",
+    "name": "Бля"
+  },
+  {
+    "slug": "происходит",
+    "name": "Происходит"
+  },
+  {
+    "slug": "ахаха",
+    "name": "Ахаха"
+  },
+  {
+    "slug": "башка",
+    "name": "Башка"
+  },
+  {
+    "slug": "развод",
+    "name": "Развод"
+  },
+  {
+    "slug": "лайки",
+    "name": "Лайки"
+  },
+  {
+    "slug": "ruslana",
+    "name": "Ruslana"
+  },
+  {
+    "slug": "конца",
+    "name": "Конца"
+  },
+  {
+    "slug": "распили",
+    "name": "Распили"
+  },
+  {
+    "slug": "меня",
+    "name": "Меня"
+  },
+  {
+    "slug": "карбюратор",
+    "name": "Карбюратор"
+  },
+  {
+    "slug": "переделай",
+    "name": "Переделай"
+  },
+  {
+    "slug": "коротко",
+    "name": "Коротко"
+  },
+  {
+    "slug": "моей",
+    "name": "Моей"
+  },
+  {
+    "slug": "карьере",
+    "name": "Карьере"
+  },
+  {
+    "slug": "кайф",
+    "name": "Кайф"
+  },
+  {
+    "slug": "гачиролл",
+    "name": "Гачиролл"
+  },
+  {
+    "slug": "колесо",
+    "name": "Колесо"
+  },
+  {
+    "slug": "cockинг",
+    "name": "Cockинг"
+  },
+  {
+    "slug": "лук",
+    "name": "Лук"
+  },
+  {
+    "slug": "стримеров",
+    "name": "Стримеров"
+  },
+  {
+    "slug": "дело",
+    "name": "Дело"
+  },
+  {
+    "slug": "привычное",
+    "name": "Привычное"
+  },
+  {
+    "slug": "хай",
+    "name": "Хай"
+  },
+  {
+    "slug": "гайс",
+    "name": "Гайс"
+  },
+  {
+    "slug": "дааааааааааааааааааааааааааааааа",
+    "name": "Дааааааааааааааааааааааааааааааа"
+  },
+  {
+    "slug": "говори",
+    "name": "Говори"
+  },
+  {
+    "slug": "профессионал",
+    "name": "Профессионал"
+  },
+  {
+    "slug": "своего",
+    "name": "Своего"
+  },
+  {
+    "slug": "дела",
+    "name": "Дела"
+  },
+  {
+    "slug": "ауакуауауа",
+    "name": "Ауакуауауа"
+  },
+  {
+    "slug": "пук",
+    "name": "Пук"
+  },
+  {
+    "slug": "страус",
+    "name": "Страус"
+  },
+  {
+    "slug": "варя",
+    "name": "Варя"
+  },
+  {
+    "slug": "дракон",
+    "name": "Дракон"
+  },
+  {
+    "slug": "хватит",
+    "name": "Хватит"
+  },
+  {
+    "slug": "сюда",
+    "name": "Сюда"
+  },
+  {
+    "slug": "слать",
+    "name": "Слать"
+  },
+  {
+    "slug": "твич",
+    "name": "Твич"
+  },
+  {
+    "slug": "прайм",
+    "name": "Прайм"
+  },
+  {
+    "slug": "бари",
+    "name": "Бари"
+  },
+  {
+    "slug": "ночной",
+    "name": "Ночной"
+  },
+  {
+    "slug": "жор",
+    "name": "Жор"
+  },
+  {
+    "slug": "огурец",
+    "name": "Огурец"
+  },
+  {
+    "slug": "ультанул",
+    "name": "Ультанул"
+  },
+  {
+    "slug": "нормальная",
+    "name": "Нормальная"
+  },
+  {
+    "slug": "ваще",
+    "name": "Ваще"
+  },
+  {
+    "slug": "кого",
+    "name": "Кого"
+  },
+  {
+    "slug": "похожа",
+    "name": "Похожа"
+  },
+  {
+    "slug": "сплю",
+    "name": "Сплю"
+  },
+  {
+    "slug": "работе",
+    "name": "Работе"
+  },
+  {
+    "slug": "туда",
+    "name": "Туда"
+  },
+  {
+    "slug": "всаджи",
+    "name": "Всаджи"
+  },
+  {
+    "slug": "становимся",
+    "name": "Становимся"
+  },
+  {
+    "slug": "дединсайдиком",
+    "name": "Дединсайдиком"
+  },
+  {
+    "slug": "день",
+    "name": "День"
+  },
+  {
+    "slug": "ауди",
+    "name": "Ауди"
+  },
+  {
+    "slug": "лучше",
+    "name": "Лучше"
+  },
+  {
+    "slug": "чем",
+    "name": "Чем"
+  },
+  {
+    "slug": "блять",
+    "name": "Блять"
+  },
+  {
+    "slug": "после",
+    "name": "После"
+  },
+  {
+    "slug": "господи",
+    "name": "Господи"
+  },
+  {
+    "slug": "линк",
+    "name": "Линк"
+  },
+  {
+    "slug": "конфликт",
+    "name": "Конфликт"
+  },
+  {
+    "slug": "барборой",
+    "name": "Барборой"
+  },
+  {
+    "slug": "ьуржуа",
+    "name": "Ьуржуа"
+  },
+  {
+    "slug": "пригорок",
+    "name": "Пригорок"
+  },
+  {
+    "slug": "tomy",
+    "name": "Tomy"
+  },
+  {
+    "slug": "хэйтеры",
+    "name": "Хэйтеры"
+  },
+  {
+    "slug": "напросились",
+    "name": "Напросились"
+  },
+  {
+    "slug": "пляс",
+    "name": "Пляс"
+  },
+  {
+    "slug": "часть",
+    "name": "Часть"
+  },
+  {
+    "slug": "такая",
+    "name": "Такая"
+  },
+  {
+    "slug": "вот",
+    "name": "Вот"
+  },
+  {
+    "slug": "семейная",
+    "name": "Семейная"
+  },
+  {
+    "slug": "еще",
+    "name": "Еще"
+  },
+  {
+    "slug": "есть",
+    "name": "Есть"
+  },
+  {
+    "slug": "где",
+    "name": "Где"
+  },
+  {
+    "slug": "дурке",
+    "name": "Дурке"
+  },
+  {
+    "slug": "uwu",
+    "name": "Uwu"
+  },
+  {
+    "slug": "ароматы",
+    "name": "Ароматы"
+  },
+  {
+    "slug": "ванили",
+    "name": "Ванили"
+  },
+  {
+    "slug": "распизделись",
+    "name": "Распизделись"
+  },
+  {
+    "slug": "низкий",
+    "name": "Низкий"
+  },
+  {
+    "slug": "флекс",
+    "name": "Флекс"
+  },
+  {
+    "slug": "бывает",
+    "name": "Бывает"
+  },
+  {
+    "slug": "слониха",
+    "name": "Слониха"
+  },
+  {
+    "slug": "про",
+    "name": "Про"
+  },
+  {
+    "slug": "мини",
+    "name": "Мини"
+  },
+  {
+    "slug": "заснял",
+    "name": "Заснял"
+  },
+  {
+    "slug": "друг",
+    "name": "Друг"
+  },
+  {
+    "slug": "друга",
+    "name": "Друга"
+  },
+  {
+    "slug": "рассмотрели",
+    "name": "Рассмотрели"
+  },
+  {
+    "slug": "скусикэт",
+    "name": "Скусикэт"
+  },
+  {
+    "slug": "готовь",
+    "name": "Готовь"
+  },
+  {
+    "slug": "денис",
+    "name": "Денис"
+  },
+  {
+    "slug": "закажи",
+    "name": "Закажи"
+  },
+  {
+    "slug": "такси",
+    "name": "Такси"
+  },
+  {
+    "slug": "мама",
+    "name": "Мама"
+  },
+  {
+    "slug": "тгк",
+    "name": "Тгк"
+  },
+  {
+    "slug": "barbara",
+    "name": "Barbara"
+  },
+  {
+    "slug": "теперь",
+    "name": "Теперь"
+  },
+  {
+    "slug": "немного",
+    "name": "Немного"
+  },
+  {
+    "slug": "соли",
+    "name": "Соли"
+  },
+  {
+    "slug": "фанатка",
+    "name": "Фанатка"
+  },
+  {
+    "slug": "понятно",
+    "name": "Понятно"
+  },
+  {
+    "slug": "кукинг",
+    "name": "Кукинг"
+  },
+  {
+    "slug": "том",
+    "name": "Том"
+  },
+  {
+    "slug": "собеседовании",
+    "name": "Собеседовании"
+  },
+  {
+    "slug": "материмся",
+    "name": "Материмся"
+  },
+  {
+    "slug": "больше",
+    "name": "Больше"
+  },
+  {
+    "slug": "спустя",
+    "name": "Спустя"
+  },
+  {
+    "slug": "денс",
+    "name": "Денс"
+  },
+  {
+    "slug": "пизда",
+    "name": "Пизда"
+  },
+  {
+    "slug": "тебе",
+    "name": "Тебе"
+  },
+  {
+    "slug": "киса",
+    "name": "Киса"
+  },
+  {
+    "slug": "мурлыка",
+    "name": "Мурлыка"
+  },
+  {
+    "slug": "хто",
+    "name": "Хто"
+  },
+  {
+    "slug": "жизнь",
+    "name": "Жизнь"
+  },
+  {
+    "slug": "прекрасна",
+    "name": "Прекрасна"
+  },
+  {
+    "slug": "хайлайтер",
+    "name": "Хайлайтер"
+  },
+  {
+    "slug": "ваш",
+    "name": "Ваш"
+  },
+  {
+    "slug": "ohhh",
+    "name": "Ohhh"
+  },
+  {
+    "slug": "хлеб",
+    "name": "Хлеб"
+  },
+  {
+    "slug": "времен",
+    "name": "Времен"
+  },
+  {
+    "slug": "1945",
+    "name": "1945"
+  },
+  {
+    "slug": "dancee",
+    "name": "Dancee"
+  },
+  {
+    "slug": "уход",
+    "name": "Уход"
+  },
+  {
+    "slug": "туалет",
+    "name": "Туалет"
+  },
+  {
+    "slug": "вода",
+    "name": "Вода"
+  },
+  {
+    "slug": "оно",
+    "name": "Оно"
+  },
+  {
+    "slug": "само",
+    "name": "Само"
+  },
+  {
+    "slug": "вылезайте",
+    "name": "Вылезайте"
+  },
+  {
+    "slug": "когда",
+    "name": "Когда"
+  },
+  {
+    "slug": "позвал",
+    "name": "Позвал"
+  },
+  {
+    "slug": "барбару",
+    "name": "Барбару"
+  },
+  {
+    "slug": "режим",
+    "name": "Режим"
+  },
+  {
+    "slug": "сигналки",
+    "name": "Сигналки"
+  },
+  {
+    "slug": "просил",
+    "name": "Просил"
+  },
+  {
+    "slug": "прекрасный",
+    "name": "Прекрасный"
+  },
+  {
+    "slug": "анакхонда",
+    "name": "Анакхонда"
+  },
+  {
+    "slug": "ежжи",
+    "name": "Ежжи"
+  },
+  {
+    "slug": "красивый",
+    "name": "Красивый"
+  },
+  {
+    "slug": "редкие",
+    "name": "Редкие"
+  },
+  {
+    "slug": "кадры",
+    "name": "Кадры"
+  },
+  {
+    "slug": "пещерный",
+    "name": "Пещерный"
+  },
+  {
+    "slug": "хуевый",
+    "name": "Хуевый"
+  },
+  {
+    "slug": "блин",
+    "name": "Блин"
+  },
+  {
+    "slug": "нас",
+    "name": "Нас"
+  },
+  {
+    "slug": "любит",
+    "name": "Любит"
+  },
+  {
+    "slug": "какая",
+    "name": "Какая"
+  },
+  {
+    "slug": "нахуй",
+    "name": "Нахуй"
+  },
+  {
+    "slug": "верепирипапа",
+    "name": "Верепирипапа"
+  },
+  {
+    "slug": "рузлана",
+    "name": "Рузлана"
+  },
+  {
+    "slug": "пиво",
+    "name": "Пиво"
+  }
 ]
