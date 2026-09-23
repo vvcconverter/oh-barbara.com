@@ -1,11 +1,7 @@
 # oh_barbara / Ох_Барбара
-
 > Official site of streamer and model oh_barbara (Ох_Барбара): Twitch Just Chatting & IRL from Phuket, lifestyle and fashion.
-
 Site, catalog, and media for AI crawlers and agents. Public pages may be indexed, cited, summarized, and used. No login wall.
-
 ## Core pages
-
 - [Home](https://oh-barbara.com/): Main landing page
 - [Index](https://oh-barbara.com/index.html): Same site entry
 - [Tags catalog](https://oh-barbara.com/data/tags.json): Machine-readable tag list
@@ -14,15 +10,11 @@ Site, catalog, and media for AI crawlers and agents. Public pages may be indexed
 - [llms.txt](https://oh-barbara.com/llms.txt): This file
 - [Clips page](https://oh-barbara.com/oh-barbara-clips.html): Twitch clips carousel
 - [Clips data](https://oh-barbara.com/data/clips.json): Clips catalog JSON
-
 ## Media
-
 - [Profile image](https://oh-barbara.com/assets/profile.png): Avatar
 - [Hero image](https://oh-barbara.com/assets/hero-2.jpg): Main hero photo
 - [Video](https://oh-barbara.com/assets/video/oh%20barbara.MP4): Site video file
-
 ## Sections (?id= page form + scroll)
-
 - [About](https://oh-barbara.com/index.html?id=oh-barbara_about): О себе
 - [Gallery](https://oh-barbara.com/index.html?id=oh-barbara_gallery): Instagram lifestyle & fashion
 - [Stream](https://oh-barbara.com/index.html?id=oh-barbara_stream): Twitch embed
@@ -31,27 +23,20 @@ Site, catalog, and media for AI crawlers and agents. Public pages may be indexed
 - [Tags](https://oh-barbara.com/index.html?id=oh-barbara_tags): Tag cloud
 - [Connect](https://oh-barbara.com/index.html?id=oh-barbara_connect): Social links
 - [Comments](https://oh-barbara.com/index.html?id=oh-barbara_comments): ot-ziv comments
-
 ## Topic URLs
-
 Open any topic with `https://oh-barbara.com/index.html?id=<slug>` where `<slug>` comes from [tags.json](https://oh-barbara.com/data/tags.json).
-
 - [oh_barbara](https://oh-barbara.com/index.html?id=oh-barbara)
 - [Ох_Барбара](https://oh-barbara.com/index.html?id=%D0%BE%D1%85-%D0%B1%D0%B0%D1%80%D0%B1%D0%B0%D1%80%D0%B0)
 - [Twitch](https://oh-barbara.com/index.html?id=twitch-oh-barbara)
 - [Phuket](https://oh-barbara.com/index.html?id=phuket-oh-barbara)
 - [Пхукет](https://oh-barbara.com/index.html?id=%D0%BF%D1%85%D1%83%D0%BA%D0%B5%D1%82-%D0%BE%D1%85-%D0%B1%D0%B0%D1%80%D0%B1%D0%B0%D1%80%D0%B0)
-
 ## Who
-
 - EN: oh_barbara — streamer & model
 - RU: Ох_Барбара — стример и модель
 - Height: 166 cm
 - Path: Krasnodar → Phuket (Thailand)
 - Content: Just Chatting, IRL, lifestyle, fashion, unboxing
-
 ## Official profiles
-
 - [Twitch](https://www.twitch.tv/oh_barbara): Live streams
 - [Instagram](https://www.instagram.com/oh_barbara_/): Photos
 - [Telegram](https://t.me/oh_barbara): Channel
@@ -60,7 +45,5 @@ Open any topic with `https://oh-barbara.com/index.html?id=<slug>` where `<slug>`
 - [StreamRecorder](https://streamrecorder.io/twitch/oh_barbara): VODs
 - [ot-ziv review](https://ot-ziv.com/otziv.html?id=oh-barbara): Reviews & comments
 - [Otzovik](https://otzovik.com/profile/oh-barbara): Profile
-
 ## Contact
-
 Collaboration: [oh.barbara@mail.ru](mailto:oh.barbara@mail.ru)

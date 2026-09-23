@@ -1,4 +1,3 @@
-/* Minimal service worker for oh-barbara.com */
 var CACHE = "ob-static-v7";
 var PRECACHE = [
   "/",
@@ -59,10 +58,8 @@ self.addEventListener("fetch", function (event) {
     return;
   }
 
-  // только свой origin
   if (url.origin !== self.location.origin) return;
 
-  // HTML / JSON — сначала сеть, потом cache
   if (isHtml(req) || isJson(url)) {
     event.respondWith(
       fetch(req)
@@ -84,7 +81,6 @@ self.addEventListener("fetch", function (event) {
     return;
   }
 
-  // CSS / JS / картинки — cache first
   if (/\.(css|js|png|jpe?g|webp|svg|ico|woff2?)($|\?)/i.test(url.pathname)) {
     event.respondWith(
       caches.match(req).then(function (cached) {
