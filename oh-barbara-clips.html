@@ -4820,7 +4820,7 @@
       </div>
       <div class="player-dock" id="player-dock" hidden>
         <button type="button" class="player-close" id="player-close" aria-label="Закрыть клип">×</button>
-        <iframe id="player" title="Twitch clip" allow="autoplay *; fullscreen *; encrypted-media *; picture-in-picture *" allowfullscreen></iframe>
+        <iframe id="player" title="Twitch clip" allow="autoplay *; fullscreen *; encrypted-media *; picture-in-picture *"></iframe>
       </div>
     </div>
 
@@ -4992,8 +4992,10 @@
         const next = document.createElement("iframe");
         next.id = "player";
         next.title = "Twitch clip";
+        next.removeAttribute("allowfullscreen");
+        next.removeAttribute("webkitallowfullscreen");
+        next.removeAttribute("mozallowfullscreen");
         next.allow = "autoplay *; fullscreen *; encrypted-media *; picture-in-picture *";
-        next.setAttribute("allowfullscreen", "");
         next.src = src;
         player.replaceWith(next);
         player = next;
