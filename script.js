@@ -556,9 +556,9 @@
     frame.src = frame.getAttribute("data-src");
   }
 
-  // прогреть clips.json заранее, пока грузится сайт
+  // прогреть clips.json заранее, пока грузится сайт (через SW cache)
   try {
-    fetch("data/clips.json", { cache: "force-cache", credentials: "same-origin" }).catch(() => {});
+    fetch("data/clips.json", { credentials: "same-origin" }).catch(function () {});
   } catch (_) {}
 
   if (document.readyState === "complete") {

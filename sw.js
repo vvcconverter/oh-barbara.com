@@ -1,5 +1,5 @@
 /* Minimal service worker for oh-barbara.com */
-var CACHE = "ob-static-v1";
+var CACHE = "ob-static-v2";
 var PRECACHE = [
   "/",
   "/index.html",

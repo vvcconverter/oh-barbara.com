@@ -22,7 +22,6 @@
   <link rel="canonical" id="ob-canon" href="https://oh-barbara.com/oh-barbara-clips.html" />
   <link rel="alternate" type="application/json" href="data/clips.json" title="Twitch clips catalog" />
   <link rel="icon" href="assets/profile.png" type="image/png" />
-  <link rel="preload" href="data/clips.json" as="fetch" crossorigin />
   <link rel="dns-prefetch" href="https://static-cdn.jtvnw.net" />
   <link rel="preconnect" href="https://static-cdn.jtvnw.net" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -840,7 +839,7 @@
         track.style.setProperty("--marquee-dur", durSec + "s");
       }
 
-      fetch("data/clips.json", { cache: "force-cache", credentials: "same-origin" })
+      fetch("data/clips.json", { credentials: "same-origin" })
         .then((r) => {
           if (!r.ok) throw new Error("clips.json " + r.status);
           return r.json();
