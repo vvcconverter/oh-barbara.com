@@ -44,11 +44,41 @@
       .replace(/^-+|-+$/g, "");
   }
 
-  function resolveReviewId() {
-    return fetch("https://ot-ziv.com/data/published.json?t=" + Date.now())
-      .then(function (r) {
-        return r.ok ? r.json() : [];
+  function fetchPublishedList() {
+    var urls = [
+      "https://ot-ziv.com/data/published.json",
+      "https://www.ot-ziv.com/data/published.json",
+    ];
+    var maxTries = 4;
+
+    function attempt(i) {
+      var base = urls[i % urls.length];
+      var url = base + (base.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now();
+      return fetch(url, {
+        method: "GET",
+        mode: "cors",
+        credentials: "omit",
+        cache: "no-store",
       })
+        .then(function (r) {
+          if (!r.ok) throw new Error("published " + r.status);
+          return r.json();
+        })
+        .catch(function () {
+          if (i + 1 >= maxTries) return null;
+          return new Promise(function (resolve) {
+            setTimeout(function () {
+              resolve(attempt(i + 1));
+            }, 350 + i * 250);
+          });
+        });
+    }
+
+    return attempt(0);
+  }
+
+  function resolveReviewId() {
+    return fetchPublishedList()
       .then(function (data) {
         var list = Array.isArray(data) ? data : [];
         for (var i = 0; i < list.length; i++) {
