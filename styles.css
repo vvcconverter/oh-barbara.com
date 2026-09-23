@@ -595,10 +595,11 @@ main {
 #about,
 #gallery,
 #stream,
+#clips,
 #tags,
 #connect,
 #comments {
-  scroll-margin-top: 5.5rem;
+  scroll-margin-top: 0;
 }
 
 .link-list {

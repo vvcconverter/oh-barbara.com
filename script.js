@@ -357,7 +357,15 @@
     const anchor = document.getElementById(anchorId);
     if (anchor) {
       requestAnimationFrame(function () {
-        anchor.scrollIntoView({ block: "start" });
+        const header = document.querySelector(".site-header");
+        const headerH = header ? header.offsetHeight : 72;
+        const gap = anchorId === "clips" ? 16 : 10;
+        const y =
+          window.scrollY +
+          anchor.getBoundingClientRect().top -
+          headerH -
+          gap;
+        window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
       });
     }
 
