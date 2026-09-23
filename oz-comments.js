@@ -145,28 +145,89 @@
       });
   }
 
+  function loadTurnstileApi() {
+    return new Promise(function (resolve, reject) {
+      if (typeof turnstile !== "undefined") {
+        resolve();
+        return;
+      }
+      var existing = document.querySelector("script[data-ob-turnstile]");
+      if (existing) {
+        existing.addEventListener("load", function () {
+          resolve();
+        });
+        existing.addEventListener("error", function () {
+          reject(new Error("turnstile"));
+        });
+        return;
+      }
+      var s = document.createElement("script");
+      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      s.async = true;
+      s.defer = true;
+      s.setAttribute("data-ob-turnstile", "1");
+      s.onload = function () {
+        resolve();
+      };
+      s.onerror = function () {
+        reject(new Error("turnstile"));
+      };
+      document.head.appendChild(s);
+    });
+  }
+
   function ozRenderTurnstile() {
     var box = document.getElementById("h");
     if (!box || !OZ_TS_KEY) return;
-    function run() {
-      if (typeof turnstile === "undefined") {
-        setTimeout(run, 80);
-        return;
-      }
-      if (ozTsWidget !== null) {
-        try {
-          turnstile.remove(ozTsWidget);
-        } catch (ex) {}
-        ozTsWidget = null;
-        box.innerHTML = "";
-      }
-      ozTsWidget = turnstile.render(box, {
-        sitekey: OZ_TS_KEY,
-        theme: "dark",
-        size: "flexible",
-      });
+    loadTurnstileApi()
+      .then(function () {
+        if (typeof turnstile === "undefined") return;
+        if (ozTsWidget !== null) {
+          try {
+            turnstile.remove(ozTsWidget);
+          } catch (ex) {}
+          ozTsWidget = null;
+          box.innerHTML = "";
+        }
+        if (box.clientWidth < 20) {
+          box.style.minWidth = "280px";
+        }
+        ozTsWidget = turnstile.render(box, {
+          sitekey: OZ_TS_KEY,
+          theme: "dark",
+          size: "flexible",
+          retry: "auto",
+          "retry-interval": 8000,
+          "refresh-expired": "auto",
+          "error-callback": function () {
+            return true;
+          },
+        });
+      })
+      .catch(function () {});
+  }
+
+  function whenCommentsVisible(cb) {
+    var root = document.getElementById("comments") || document.getElementById("h");
+    if (!root || !("IntersectionObserver" in window)) {
+      cb();
+      return;
     }
-    run();
+    var done = false;
+    var io = new IntersectionObserver(
+      function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (!entries[i].isIntersecting) continue;
+          if (done) return;
+          done = true;
+          io.disconnect();
+          cb();
+          break;
+        }
+      },
+      { rootMargin: "200px 0px", threshold: 0.01 }
+    );
+    io.observe(root);
   }
 
   var form = document.getElementById("oz-c-form");
@@ -262,7 +323,7 @@
 
   resolveReviewId().then(function () {
     loadComments();
-    ozRenderTurnstile();
+    whenCommentsVisible(ozRenderTurnstile);
     setInterval(loadComments, 20000);
   });
 })();

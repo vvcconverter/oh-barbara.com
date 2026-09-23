@@ -22,6 +22,9 @@
   <link rel="canonical" id="ob-canon" href="https://oh-barbara.com/" />
   <link rel="alternate" type="application/json" href="data/tags.json" title="Tags catalog" />
   <link rel="icon" href="assets/profile.png" type="image/png" />
+  <link rel="preload" href="data/clips.json" as="fetch" crossorigin />
+  <link rel="preload" href="oh-barbara-clips.html?embed=1" as="document" />
+  <link rel="dns-prefetch" href="https://static-cdn.jtvnw.net" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -116,6 +119,18 @@
         <img src="assets/hero-2.jpg" alt="Ох_Барбара — модель и стример" class="hero-photo" />
         <div class="hero-veil"></div>
       </div>
+      <div class="hero-clips is-loading" id="ob-clips-sig">
+        <div class="clips-preload" id="ob-clips-preload" aria-live="polite">
+          <span class="clips-preload-spin" aria-hidden="true"></span>
+          <span>Загрузка клипов…</span>
+        </div>
+        <iframe
+          data-src="oh-barbara-clips.html?embed=1"
+          title="Клипы oh_barbara — карусель Twitch"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="autoplay; fullscreen; picture-in-picture"
+        ></iframe>
+      </div>
       <div class="hero-copy">
         <p class="hero-kicker" id="ob-kicker">Streamer &amp; Model · Phuket</p>
         <h1 class="hero-brand" id="ob-title" itemprop="name">oh_barbara</h1>
@@ -165,7 +180,7 @@
     <section class="stream" id="stream" data-tags="oh-barbara_stream,twitch-oh-barbara,твич-ох-барбара,just-chatting-oh-barbara,джест-чатинг-ох-барбара,irl-oh-barbara,ирл-ох-барбара,streamer-oh-barbara,стример-ох-барбара,unboxing-oh-barbara,анпакинг-ох-барбара,phuket-oh-barbara,пхукет-ох-барбара">
       <header class="section-head reveal">
         <h2>Стрим</h2>
-        <p>Just Chatting · IRL · ~2.3K на Twitch</p>
+        <p id="ob-stream-meta">Just Chatting · IRL · Twitch</p>
       </header>
       <div class="stream-embed reveal">
         <div id="twitch-embed"></div>
@@ -325,7 +340,6 @@
   <script src="https://embed.twitch.tv/embed/v1.js"></script>
   <script src="tags.js"></script>
   <script src="script.js"></script>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script src="oz-comments.js" defer></script>
 </body>
 </html>

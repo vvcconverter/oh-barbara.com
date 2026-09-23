@@ -59,19 +59,166 @@
   const parents = ["localhost", "127.0.0.1", "oh-barbara.com", "www.oh-barbara.com"];
   if (parents.indexOf(host) === -1) parents.push(host);
 
-  const embedRoot = document.getElementById("twitch-embed");
-  if (embedRoot && window.Twitch && Twitch.Embed) {
-    const w = Math.max(400, Math.floor(embedRoot.clientWidth || 960));
+  const CHANNEL = "oh_barbara";
+
+  function formatCount(n) {
+    n = Math.max(0, Math.round(Number(n) || 0));
+    if (n >= 1000000) {
+      const v = n / 1000000;
+      return (v >= 10 ? Math.round(v) : Math.round(v * 10) / 10) + "M";
+    }
+    if (n >= 1000) {
+      const v = n / 1000;
+      return (v >= 10 ? Math.round(v) : Math.round(v * 10) / 10).toString().replace(".", ",") + "K";
+    }
+    return String(n);
+  }
+
+  function mountTwitchEmbed(root) {
+    if (!root || !window.Twitch || !Twitch.Embed) return;
+    const w = Math.max(400, Math.floor(root.clientWidth || 960));
     const h = Math.max(300, Math.min(620, Math.round(w * 0.56) + (w >= 800 ? 0 : 320)));
     new Twitch.Embed("twitch-embed", {
       width: "100%",
       height: Math.max(480, Math.min(680, h)),
-      channel: "oh_barbara",
+      channel: CHANNEL,
       layout: "video-with-chat",
       theme: "dark",
       muted: true,
       autoplay: true,
       parent: parents,
+    });
+  }
+
+  function showTwitchOffline(root) {
+    if (!root) return;
+    root.innerHTML =
+      '<div class="twitch-offline">' +
+      '<p class="twitch-offline-title">Сейчас оффлайн</p>' +
+      '<p class="twitch-offline-text">Стрим oh_barbara не в эфире. Можно открыть плеер и чат здесь.</p>' +
+      '<button type="button" class="btn btn-primary" id="ob-open-twitch-embed">Открыть плеер с чатом</button>' +
+      "</div>";
+    const btn = document.getElementById("ob-open-twitch-embed");
+    if (btn) {
+      btn.addEventListener("click", function () {
+        root.innerHTML = "";
+        mountTwitchEmbed(root);
+      });
+    }
+  }
+
+  function pickStreamTags(tags) {
+    const list = Array.isArray(tags) ? tags : [];
+    const names = list
+      .map(function (t) {
+        return (t && (t.name || t.localizedName || "")).trim();
+      })
+      .filter(Boolean);
+    const prefer = ["IRL", "Just Chatting", "Unboxing", "Music", "Art", "ASMR"];
+    const out = [];
+    prefer.forEach(function (p) {
+      const hit = names.find(function (n) {
+        return n.toLowerCase() === p.toLowerCase();
+      });
+      if (hit && out.indexOf(hit) === -1) out.push(hit);
+    });
+    names.forEach(function (n) {
+      if (out.length >= 2) return;
+      if (out.indexOf(n) === -1) out.push(n);
+    });
+    return out.slice(0, 2);
+  }
+
+  function applyTwitchMeta(info) {
+    const meta = document.getElementById("ob-stream-meta");
+    const note = document.querySelector(".stream-note");
+    if (!info) return;
+
+    const parts = [];
+    if (info.game) parts.push(info.game);
+    (info.tags || []).forEach(function (t) {
+      if (t && parts.indexOf(t) === -1) parts.push(t);
+    });
+    if (info.followers != null) {
+      parts.push(formatCount(info.followers) + " на Twitch");
+    } else {
+      parts.push("Twitch");
+    }
+    if (meta && parts.length) meta.textContent = parts.join(" · ");
+
+    if (note) {
+      if (info.live && info.title) {
+        note.textContent = "Сейчас в эфире: " + info.title;
+      } else if (info.lastTitle) {
+        note.textContent = "Последний стрим: " + info.lastTitle;
+      } else if (!info.live) {
+        note.textContent = "Канал оффлайн · загляните позже на Twitch";
+      }
+    }
+  }
+
+  function fetchTwitchChannel(login) {
+    return fetch("https://gql.twitch.tv/gql", {
+      method: "POST",
+      headers: {
+        "Client-ID": "kimne78kx3ncx6brgo4mv6wki5h1ko",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query:
+          "query($login:String!){" +
+          "  user(login:$login){" +
+          "    followers{ totalCount }" +
+          "    stream{" +
+          "      id title viewersCount" +
+          "      game{ name }" +
+          "      freeformTags{ name }" +
+          "    }" +
+          "    lastBroadcast{ title game{ name } }" +
+          "  }" +
+          "}",
+        variables: { login: login },
+      }),
+    })
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (json) {
+        const user = json && json.data && json.data.user;
+        if (!user) return null;
+        const stream = user.stream;
+        const last = user.lastBroadcast;
+        const game =
+          (stream && stream.game && stream.game.name) ||
+          (last && last.game && last.game.name) ||
+          "";
+        return {
+          live: !!stream,
+          title: (stream && stream.title) || "",
+          lastTitle: (last && last.title) || "",
+          game: game,
+          tags: pickStreamTags(stream && stream.freeformTags),
+          followers:
+            user.followers && user.followers.totalCount != null
+              ? user.followers.totalCount
+              : null,
+          viewers: stream && stream.viewersCount != null ? stream.viewersCount : null,
+        };
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  const embedRoot = document.getElementById("twitch-embed");
+  if (embedRoot) {
+    fetchTwitchChannel(CHANNEL).then(function (info) {
+      applyTwitchMeta(info);
+      if (info && info.live === false) {
+        showTwitchOffline(embedRoot);
+        return;
+      }
+      mountTwitchEmbed(embedRoot);
     });
   }
 
@@ -381,6 +528,35 @@
     renderTagCloud();
     wireCatDrops();
     applyTagFilter(id);
+  }
+
+  function startClipsCarousel() {
+    const wrap = document.getElementById("ob-clips-sig");
+    const frame = document.querySelector("#ob-clips-sig iframe[data-src]");
+    if (!frame || frame.getAttribute("src")) return;
+
+    const markReady = () => {
+      if (wrap) wrap.classList.add("is-ready");
+      if (wrap) wrap.classList.remove("is-loading");
+    };
+
+    frame.addEventListener("load", markReady, { once: true });
+    window.addEventListener("message", (e) => {
+      if (e && e.data && e.data.type === "ob-clips-ready") markReady();
+    });
+
+    frame.src = frame.getAttribute("data-src");
+  }
+
+  // прогреть clips.json заранее, пока грузится сайт
+  try {
+    fetch("data/clips.json", { cache: "force-cache", credentials: "same-origin" }).catch(() => {});
+  } catch (_) {}
+
+  if (document.readyState === "complete") {
+    startClipsCarousel();
+  } else {
+    window.addEventListener("load", startClipsCarousel);
   }
 
   if (window.OB_TAGS && OB_TAGS.loadUserTags) {
