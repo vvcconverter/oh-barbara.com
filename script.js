@@ -556,7 +556,6 @@
     frame.src = frame.getAttribute("data-src");
   }
 
-  // прогреть clips.json заранее, пока грузится сайт (через SW cache)
   try {
     fetch("data/clips.json", { credentials: "same-origin" }).catch(function () {});
   } catch (_) {}
