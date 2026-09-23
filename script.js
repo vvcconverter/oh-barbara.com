@@ -292,7 +292,7 @@
     });
 
     document.querySelectorAll("[data-tags]").forEach((el) => {
-      if (!id || /_about$|_gallery$|_stream$|_video$|_tags$|_connect$|_comments$/.test(id)) {
+      if (!id || /_about$|_gallery$|_stream$|_clips$|_video$|_tags$|_connect$|_comments$/.test(id)) {
         el.classList.remove("ob-dim");
         return;
       }
@@ -352,7 +352,7 @@
     setAttr("ob-canon", "href", pageUrl);
     setMeta("ob-og-url", pageUrl);
 
-    const secMatch = String(id).match(/_(about|gallery|stream|video|tags|connect|comments)$/);
+    const secMatch = String(id).match(/_(about|gallery|stream|clips|video|tags|connect|comments)$/);
     const anchorId = secMatch ? secMatch[1] : id === "video-oh-barbara" ? "video" : id;
     const anchor = document.getElementById(anchorId);
     if (anchor) {
@@ -531,8 +531,8 @@
   }
 
   function startClipsCarousel() {
-    const wrap = document.getElementById("ob-clips-sig");
-    const frame = document.querySelector("#ob-clips-sig iframe[data-src]");
+    const wrap = document.getElementById("clips");
+    const frame = document.querySelector("#clips iframe[data-src]");
     if (!frame || frame.getAttribute("src")) return;
 
     const markReady = () => {
