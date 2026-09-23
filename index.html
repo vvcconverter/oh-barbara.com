@@ -342,5 +342,12 @@
   <script src="tags.js"></script>
   <script src="script.js"></script>
   <script src="oz-comments.js" defer></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/sw.js").catch(function () {});
+      });
+    }
+  </script>
 </body>
 </html>

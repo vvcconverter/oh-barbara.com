@@ -975,7 +975,8 @@ main {
 
 .db {
   display: flex;
-  gap: 0.2rem;
+  flex-wrap: wrap;
+  gap: 0.45rem;
 }
 
 .ds {
@@ -987,6 +988,11 @@ main {
   line-height: 1;
   cursor: pointer;
   padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ds.dv {
