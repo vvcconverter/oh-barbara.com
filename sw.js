@@ -1,4 +1,4 @@
-var CACHE = "ob-static-v7";
+var CACHE = "ob-static-v27";
 var PRECACHE = [
   "/",
   "/index.html",
@@ -9,9 +9,10 @@ var PRECACHE = [
   "/oh-barbara-clips.html",
   "/data/clips.json",
   "/data/tags.json",
-  "/assets/hero-2.jpg",
   "/assets/profile.png",
   "/assets/gallery-1.jpg",
+  "/assets/fon.webp",
+  "/assets/Oh-barbara.webp"
 ];
 
 self.addEventListener("install", function (event) {
@@ -47,6 +48,23 @@ function isJson(url) {
   return /\.json($|\?)/.test(url.pathname);
 }
 
+function isStaticAsset(url) {
+  return /\.(css|js|png|jpe?g|webp|svg|ico|woff2?|mp4|webm|avif)($|\?)/i.test(url.pathname);
+}
+
+function withCacheControl(res, maxAge, immutable) {
+  if (!res) return res;
+  var headers = new Headers(res.headers);
+  var value = "public, max-age=" + maxAge;
+  if (immutable) value += ", immutable";
+  headers.set("Cache-Control", value);
+  return new Response(res.body, {
+    status: res.status,
+    statusText: res.statusText,
+    headers: headers
+  });
+}
+
 self.addEventListener("fetch", function (event) {
   var req = event.request;
   if (req.method !== "GET") return;
@@ -65,10 +83,11 @@ self.addEventListener("fetch", function (event) {
       fetch(req)
         .then(function (res) {
           if (res && res.ok) {
-            var copy = res.clone();
+            var cached = withCacheControl(res.clone(), 300, false);
             caches.open(CACHE).then(function (cache) {
-              cache.put(req, copy);
+              cache.put(req, cached);
             });
+            return withCacheControl(res, 300, false);
           }
           return res;
         })
@@ -81,16 +100,17 @@ self.addEventListener("fetch", function (event) {
     return;
   }
 
-  if (/\.(css|js|png|jpe?g|webp|svg|ico|woff2?)($|\?)/i.test(url.pathname)) {
+  if (isStaticAsset(url)) {
     event.respondWith(
       caches.match(req).then(function (cached) {
-        if (cached) return cached;
+        if (cached) return withCacheControl(cached, 31536000, true);
         return fetch(req).then(function (res) {
           if (res && res.ok) {
-            var copy = res.clone();
+            var out = withCacheControl(res.clone(), 31536000, true);
             caches.open(CACHE).then(function (cache) {
-              cache.put(req, copy);
+              cache.put(req, out.clone());
             });
+            return withCacheControl(res, 31536000, true);
           }
           return res;
         });

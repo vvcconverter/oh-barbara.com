@@ -12,8 +12,7 @@ Site, catalog, and media for AI crawlers and agents. Public pages may be indexed
 - [Clips data](https://oh-barbara.com/data/clips.json): Clips catalog JSON
 ## Media
 - [Profile image](https://oh-barbara.com/assets/profile.png): Avatar
-- [Hero image](https://oh-barbara.com/assets/hero-2.jpg): Main hero photo
-- [Video](https://oh-barbara.com/assets/video/oh%20barbara.MP4): Site video file
+- [Video](https://oh-barbara.com/index.html?id=oh-barbara_oh-barbara-mp4): Site video (oh-barbara.mp4)
 ## Sections (?id= page form + scroll)
 - [About](https://oh-barbara.com/index.html?id=oh-barbara_about): О себе
 - [Gallery](https://oh-barbara.com/index.html?id=oh-barbara_gallery): Instagram lifestyle & fashion
@@ -46,4 +45,4 @@ Open any topic with `https://oh-barbara.com/index.html?id=<slug>` where `<slug>`
 - [ot-ziv review](https://ot-ziv.com/otziv.html?id=oh-barbara): Reviews & comments
 - [Otzovik](https://otzovik.com/profile/oh-barbara): Profile
 ## Contact
-Collaboration: [oh.barbara@mail.ru](mailto:oh.barbara@mail.ru)
+Collaboration: [oh.barbara@mail.ru](mailto:oh.barbara@mail.ru)создай якорную ссылку на сайте занеси ее в sitemap.xml ссылка - твич канал с чатом на весь экран
