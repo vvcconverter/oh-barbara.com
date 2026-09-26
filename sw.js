@@ -9,9 +9,6 @@ var PRECACHE = [
   "/oh-barbara-clips.html",
   "/data/clips.json",
   "/data/tags.json",
-  "/assets/profile.png",
-  "/assets/gallery-1.jpg",
-  "/assets/fon.webp",
   "/assets/Oh-barbara.webp"
 ];
 
