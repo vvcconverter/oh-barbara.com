@@ -1,4 +1,4 @@
-var CACHE = "ob-static-v27";
+var CACHE = "ob-static-v28";
 var PRECACHE = [
   "/",
   "/index.html",
@@ -45,12 +45,16 @@ function isJson(url) {
   return /\.json($|\?)/.test(url.pathname);
 }
 
+function isMedia(url) {
+  return /\.(mp4|webm)($|\?)/i.test(url.pathname);
+}
+
 function isStaticAsset(url) {
-  return /\.(css|js|png|jpe?g|webp|svg|ico|woff2?|mp4|webm|avif)($|\?)/i.test(url.pathname);
+  return /\.(css|js|png|jpe?g|webp|svg|ico|woff2?|avif)($|\?)/i.test(url.pathname);
 }
 
 function withCacheControl(res, maxAge, immutable) {
-  if (!res) return res;
+  if (!res || res.status !== 200) return res;
   var headers = new Headers(res.headers);
   var value = "public, max-age=" + maxAge;
   if (immutable) value += ", immutable";
@@ -75,11 +79,13 @@ self.addEventListener("fetch", function (event) {
 
   if (url.origin !== self.location.origin) return;
 
+  if (isMedia(url)) return;
+
   if (isHtml(req) || isJson(url)) {
     event.respondWith(
       fetch(req)
         .then(function (res) {
-          if (res && res.ok) {
+          if (res && res.status === 200) {
             var cached = withCacheControl(res.clone(), 300, false);
             caches.open(CACHE).then(function (cache) {
               cache.put(req, cached);
@@ -102,7 +108,7 @@ self.addEventListener("fetch", function (event) {
       caches.match(req).then(function (cached) {
         if (cached) return withCacheControl(cached, 31536000, true);
         return fetch(req).then(function (res) {
-          if (res && res.ok) {
+          if (res && res.status === 200) {
             var out = withCacheControl(res.clone(), 31536000, true);
             caches.open(CACHE).then(function (cache) {
               cache.put(req, out.clone());
