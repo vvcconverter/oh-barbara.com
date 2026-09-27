@@ -1423,6 +1423,7 @@
     chat: "oh-barbara_chat",
     offtop: "oh-barbara_offtop",
     blog: "oh-barbara_offtop",
+    news: "oh-barbara_offtop",
 
     twitch: "twitch-oh-barbara",
     твич: "твич-ох-барбара",
@@ -1725,9 +1726,14 @@
   }
 
   function tagHref(slug) {
+    var raw = String(slug || "").trim();
     var id = resolveId(slug);
     if (CLIP_SLUGS[id] || (BY_SLUG[id] && BY_SLUG[id].clip)) return "oh-barbara-clips.html?id=" + encodeURIComponent(id);
-    if (id === "oh-barbara_offtop" || id === "offtop" || id === "blog") return "offtop.html";
+    if (id === "oh-barbara_offtop" || id === "offtop" || id === "blog" || id === "news") {
+      var q = raw.toLowerCase();
+      if (q !== "blog" && q !== "news" && q !== "offtop") q = "offtop";
+      return "offtop.html?id=" + encodeURIComponent(q);
+    }
     return "index.html?id=" + encodeURIComponent(id);
   }
 

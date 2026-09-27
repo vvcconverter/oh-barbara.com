@@ -67,7 +67,7 @@
     feed.querySelectorAll("article.ob-blog-post").forEach(function (n) {
       n.remove();
     });
-    if (empty) empty.hidden = posts.length > 0;
+    if (empty) empty.hidden = true;
     posts.forEach(function (p) {
       const art = document.createElement("article");
       art.className = "ob-blog-post reveal is-in";
@@ -314,6 +314,37 @@
     });
   }
 
+  document.querySelectorAll(".ob-offtop .section-label a[data-ob-page]").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      var page = a.getAttribute("data-ob-page") || "offtop.html";
+      var id = "";
+      try {
+        id = new URL(a.href, location.href).searchParams.get("id") || "";
+      } catch (err) {}
+      location.href = id ? page + "?id=" + encodeURIComponent(id) : page;
+    });
+  });
+
   loadBlog();
   if (gateOpen()) openModal();
+
+  (function sunLogo() {
+    function run() {
+      var el = document.querySelector(".site-header .logo");
+      if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      el.classList.remove("is-sunlit");
+      void el.offsetWidth;
+      el.classList.add("is-sunlit");
+      el.addEventListener(
+        "animationend",
+        function (e) {
+          if (e.animationName === "ob-logo-warm") el.classList.remove("is-sunlit");
+        },
+        { once: true }
+      );
+    }
+    if (document.readyState === "complete") setTimeout(run, 180);
+    else window.addEventListener("load", function () { setTimeout(run, 180); });
+  })();
 })();

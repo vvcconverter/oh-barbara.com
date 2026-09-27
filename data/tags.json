@@ -52,6 +52,18 @@
     "name": "Блог oh_barbara"
   },
   {
+    "slug": "offtop",
+    "name": "Offtop oh_barbara"
+  },
+  {
+    "slug": "blog",
+    "name": "Blog oh_barbara"
+  },
+  {
+    "slug": "news",
+    "name": "News oh_barbara"
+  },
+  {
     "slug": "twitch-oh-barbara",
     "name": "Twitch oh_barbara"
   },
