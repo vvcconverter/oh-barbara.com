@@ -1661,8 +1661,8 @@
       var name = String(t.name || "").trim() || slug;
       if (!slug) return;
       if (!BY_SLUG[slug]) {
-        BY_SLUG[slug] = { slug: slug, name: name, user: true, clip: !!(t && t.clip) }; if (t && t.clip) CLIP_SLUGS[slug] = true;
-      } else { if (t && t.clip) { BY_SLUG[slug].clip = true; CLIP_SLUGS[slug] = true; } if (!CAT_SLUGS[slug] && name) BY_SLUG[slug].name = name; }
+        BY_SLUG[slug] = { slug: slug, name: name, user: true, clip: !!(t && t.clip), offtop: !!(t && t.offtop) }; if (t && t.clip) CLIP_SLUGS[slug] = true;
+      } else { if (t && t.clip) { BY_SLUG[slug].clip = true; CLIP_SLUGS[slug] = true; } if (t && t.offtop) BY_SLUG[slug].offtop = true; if (!CAT_SLUGS[slug] && name) BY_SLUG[slug].name = name; }
     });
   }
 
@@ -1734,6 +1734,7 @@
       if (q !== "blog" && q !== "news" && q !== "offtop") q = "offtop";
       return "offtop.html?id=" + encodeURIComponent(q);
     }
+    if (BY_SLUG[id] && BY_SLUG[id].offtop) return "offtop.html?id=" + encodeURIComponent(id);
     return "index.html?id=" + encodeURIComponent(id);
   }
 

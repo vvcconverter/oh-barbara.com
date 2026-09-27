@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Manrope:wght@400;500;600&display=swap" />
-<link rel="stylesheet" href="styles.css?v=97" />
+<link rel="stylesheet" href="styles.css?v=99" />
 </head>
 <body class="ob-offtop-page" itemscope itemtype="https://schema.org/Blog">
 <div class="noise" aria-hidden="true"></div>
@@ -77,16 +77,41 @@
       <div class="ob-blog-label-row">
         <label for="ob-blog-title">Заголовок</label>
         <button type="button" class="ob-blog-tip-btn" id="ob-blog-title-tip" aria-label="Подсказка по заголовку" aria-expanded="false" aria-controls="ob-blog-title-tip-msg">i</button>
-        <p class="ob-blog-tip-msg" id="ob-blog-title-tip-msg" role="status" hidden>Заголовок должен иметь от 50 до 60 символов для лучшей индексации.</p>
+        <span class="ob-blog-tip-msg" id="ob-blog-title-tip-msg" role="status" hidden>Заголовок лучше 50–60 символов для индексации.</span>
       </div>
       <input type="text" id="ob-blog-title" required />
-      <label for="ob-blog-type">Тип</label>
-      <select id="ob-blog-type">
-        <option value="news">Новость</option>
-        <option value="offtop">Offtop</option>
-        <option value="post">Публикация</option>
-      </select>
+      <label id="ob-blog-type-label">Тип</label>
+      <div class="ob-blog-types" role="group" aria-labelledby="ob-blog-type-label">
+        <button type="button" class="ob-blog-type-btn is-on" data-type="news">Новость</button>
+        <button type="button" class="ob-blog-type-btn" data-type="offtop">Offtop</button>
+        <button type="button" class="ob-blog-type-btn" data-type="post">Публикация</button>
+      </div>
+      <input type="hidden" id="ob-blog-type" value="news" />
       <label for="ob-blog-body">Текст</label>
+      <div class="ob-blog-md-bar" role="toolbar" aria-label="Вставка в текст">
+        <button type="button" class="ob-blog-md-ico" id="ob-md-link" title="Добавить ссылку" aria-label="Добавить ссылку" aria-expanded="false" aria-controls="ob-md-link-panel">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M3.9 12a5 5 0 0 1 5-5h4v2h-4a3 3 0 1 0 0 6h4v2h-4a5 5 0 0 1-5-5zm7-1h6v2h-6v-2zm4.1-4h4a5 5 0 0 1 0 10h-4v-2h4a3 3 0 1 0 0-6h-4V7z"/></svg>
+        </button>
+        <button type="button" class="ob-blog-md-ico" id="ob-md-img" title="Добавить картинку" aria-label="Добавить картинку" aria-expanded="false" aria-controls="ob-md-img-panel">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M19 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 12H5l3.5-4.5 2.5 3 3.5-4.5L19 17zM8.5 10A1.5 1.5 0 1 0 8.5 7a1.5 1.5 0 0 0 0 3z"/></svg>
+        </button>
+      </div>
+      <div class="ob-blog-md-panel" id="ob-md-link-panel" hidden>
+        <label for="ob-md-link-name">Название</label>
+        <input type="text" id="ob-md-link-name" autocomplete="off" />
+        <label for="ob-md-link-tags">Теги</label>
+        <input type="text" id="ob-md-link-tags" autocomplete="off" placeholder="через запятую" />
+        <label for="ob-md-link-url">Ссылка</label>
+        <input type="url" id="ob-md-link-url" autocomplete="off" placeholder="https://" />
+        <button type="button" class="btn btn-ghost" id="ob-md-link-ok">Вставить ссылку</button>
+      </div>
+      <div class="ob-blog-md-panel" id="ob-md-img-panel" hidden>
+        <label for="ob-md-img-name">Название</label>
+        <input type="text" id="ob-md-img-name" autocomplete="off" />
+        <label for="ob-md-img-url">Ссылка на картинку</label>
+        <input type="url" id="ob-md-img-url" autocomplete="off" placeholder="https://" />
+        <button type="button" class="btn btn-ghost" id="ob-md-img-ok">Вставить картинку</button>
+      </div>
       <textarea id="ob-blog-body" rows="8" maxlength="20000" required></textarea>
       <p class="ob-blog-err" id="ob-blog-save-err" hidden></p>
       <p class="ob-blog-ok" id="ob-blog-save-ok" hidden></p>
@@ -98,6 +123,6 @@
   </div>
 </div>
 
-<script src="offtop.js?v=5" defer></script>
+<script src="offtop.js?v=7" defer></script>
 </body>
 </html>

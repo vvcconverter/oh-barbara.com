@@ -2,7 +2,6 @@
   const GH = {
     owner: "vvcconverter",
     repo: "oh-barbara.com",
-    path: "data/blog.json",
     branch: "main",
   };
   // default password: ohbarbara  — смените PASS_HASH в offtop.js после деплоя
@@ -27,6 +26,10 @@
 
   let blogData = { updated: null, posts: [] };
   let blogSha = null;
+  let tagsSha = null;
+  let sitemapSha = null;
+  let knownSlugs = Object.create(null);
+  let pendingTags = [];
 
   function esc(s) {
     return String(s || "")
@@ -34,6 +37,16 @@
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
+  }
+
+  function slugify(raw) {
+    return String(raw || "")
+      .trim()
+      .toLowerCase()
+      .replace(/ё/g, "е")
+      .replace(/[^a-z0-9а-я]+/gi, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 72);
   }
 
   function fmtDate(iso) {
@@ -56,6 +69,35 @@
     if (t === "news") return "Новость";
     if (t === "offtop") return "Offtop";
     return "Публикация";
+  }
+
+  function mdToHtml(src) {
+    let s = esc(src);
+    s = s.replace(
+      /!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"([^\"]*)\")?\)/g,
+      function (_, alt, url, title) {
+        const t = title ? ' title="' + esc(title) + '"' : "";
+        return (
+          '<img src="' +
+          esc(url) +
+          '" alt="' +
+          esc(alt) +
+          '"' +
+          t +
+          " loading=\"lazy\" decoding=\"async\" />"
+        );
+      }
+    );
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, text, url) {
+      return (
+        '<a href="' +
+        esc(url) +
+        '" target="_blank" rel="noopener noreferrer">' +
+        text +
+        "</a>"
+      );
+    });
+    return s.replace(/\n/g, "<br>");
   }
 
   function render() {
@@ -90,7 +132,7 @@
         esc(p.title) +
         "</h2>" +
         '<div class="ob-blog-body" itemprop="articleBody">' +
-        esc(p.body).replace(/\n/g, "<br>") +
+        mdToHtml(p.body || "") +
         "</div>";
       feed.appendChild(art);
     });
@@ -115,15 +157,213 @@
     };
   }
 
-  function contentUrl() {
+  function contentUrl(path) {
     return (
       "https://api.github.com/repos/" +
       GH.owner +
       "/" +
       GH.repo +
       "/contents/" +
-      GH.path
+      path
     );
+  }
+
+  function decodeGhContent(json) {
+    return decodeURIComponent(
+      Array.prototype.map
+        .call(atob(String(json.content || "").replace(/\n/g, "")), function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+  }
+
+  async function fetchFile(token, path) {
+    const res = await fetch(contentUrl(path) + "?ref=" + encodeURIComponent(GH.branch), {
+      headers: apiHeaders(token),
+    });
+    if (res.status === 404) return { sha: null, text: null };
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error("GitHub GET " + path + " " + res.status + ": " + t.slice(0, 160));
+    }
+    const json = await res.json();
+    return { sha: json.sha || null, text: decodeGhContent(json) };
+  }
+
+  async function putFile(token, path, text, sha, message) {
+    const content = btoa(unescape(encodeURIComponent(text)));
+    const payload = {
+      message: message || "update " + path,
+      content: content,
+      branch: GH.branch,
+    };
+    if (sha) payload.sha = sha;
+    const res = await fetch(contentUrl(path), {
+      method: "PUT",
+      headers: apiHeaders(token),
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error("GitHub PUT " + path + " " + res.status + ": " + t.slice(0, 200));
+    }
+    const json = await res.json();
+    return (json.content && json.content.sha) || sha;
+  }
+
+  function markSlug(slug) {
+    if (slug) knownSlugs[String(slug).toLowerCase()] = true;
+  }
+
+  function rememberSlugsFromTags(list) {
+    (list || []).forEach(function (t) {
+      if (t && t.slug) markSlug(t.slug);
+    });
+  }
+
+  function uniqueSlug(base) {
+    var root = slugify(base) || "tag";
+    var slug = root;
+    var n = 1;
+    while (knownSlugs[slug] || pendingTags.some(function (t) { return t.slug === slug; })) {
+      slug = root + String(n);
+      n += 1;
+    }
+    return slug;
+  }
+
+  function queuePendingTag(name, extra) {
+    var slug = uniqueSlug(name);
+    var tag = {
+      slug: slug,
+      name: String(name || slug).trim() || slug,
+      offtop: true,
+    };
+    if (extra && typeof extra === "object") {
+      Object.keys(extra).forEach(function (k) {
+        tag[k] = extra[k];
+      });
+    }
+    pendingTags.push(tag);
+    markSlug(slug);
+    return tag;
+  }
+
+  function insertAtCursor(textarea, text) {
+    if (!textarea) return;
+    var start = textarea.selectionStart || 0;
+    var end = textarea.selectionEnd || 0;
+    var val = textarea.value || "";
+    var pad = val && !/\n$/.test(val.slice(0, start)) && start > 0 ? "\n" : "";
+    var chunk = pad + text + "\n";
+    textarea.value = val.slice(0, start) + chunk + val.slice(end);
+    var pos = start + chunk.length;
+    textarea.focus();
+    textarea.setSelectionRange(pos, pos);
+  }
+
+  async function refreshKnownSlugs(token) {
+    knownSlugs = Object.create(null);
+    try {
+      if (window.OB_TAGS && OB_TAGS.bySlug) {
+        Object.keys(OB_TAGS.bySlug).forEach(markSlug);
+      }
+    } catch (e) {}
+    try {
+      const local = await fetch("data/tags.json?t=" + Date.now(), {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
+      if (local.ok) rememberSlugsFromTags(await local.json());
+    } catch (e) {}
+    if (token) {
+      try {
+        const remote = await fetchFile(token, "data/tags.json");
+        if (remote.text) {
+          tagsSha = remote.sha;
+          rememberSlugsFromTags(JSON.parse(remote.text));
+        }
+      } catch (e) {}
+    }
+    pendingTags.forEach(function (t) {
+      markSlug(t.slug);
+    });
+  }
+
+  function sitemapHas(xml, loc) {
+    return xml.indexOf("<loc>" + loc + "</loc>") !== -1;
+  }
+
+  function appendSitemapUrls(xml, urls) {
+    var block = urls
+      .map(function (u) {
+        return (
+          "  <url>\n" +
+          "    <loc>" +
+          u +
+          "</loc>\n" +
+          "    <lastmod>" +
+          new Date().toISOString().slice(0, 10) +
+          "</lastmod>\n" +
+          "    <changefreq>weekly</changefreq>\n" +
+          "    <priority>0.7</priority>\n" +
+          "  </url>\n"
+        );
+      })
+      .join("");
+    if (xml.indexOf("</urlset>") === -1) return xml + "\n" + block;
+    return xml.replace("</urlset>", block + "</urlset>");
+  }
+
+  async function commitPendingMeta(token) {
+    if (!pendingTags.length) return;
+    const tagsFile = await fetchFile(token, "data/tags.json");
+    tagsSha = tagsFile.sha;
+    let list = [];
+    try {
+      list = tagsFile.text ? JSON.parse(tagsFile.text) : [];
+    } catch (e) {
+      list = [];
+    }
+    if (!Array.isArray(list)) list = [];
+    const have = Object.create(null);
+    list.forEach(function (t) {
+      if (t && t.slug) have[String(t.slug).toLowerCase()] = true;
+    });
+    const fresh = [];
+    pendingTags.forEach(function (t) {
+      if (!t || !t.slug || have[String(t.slug).toLowerCase()]) return;
+      list.push({ slug: t.slug, name: t.name, offtop: true });
+      have[String(t.slug).toLowerCase()] = true;
+      fresh.push(t);
+    });
+    if (fresh.length) {
+      tagsSha = await putFile(
+        token,
+        "data/tags.json",
+        JSON.stringify(list, null, 2) + "\n",
+        tagsSha,
+        "blog: tags " + fresh.map(function (t) { return t.slug; }).join(", ")
+      );
+    }
+
+    const sm = await fetchFile(token, "sitemap.xml");
+    sitemapSha = sm.sha;
+    let xml = sm.text || "";
+    const addLocs = [];
+    fresh.forEach(function (t) {
+      const a = "https://oh-barbara.com/offtop.html?id=" + encodeURIComponent(t.slug);
+      const b = "https://oh-barbara.com/index.html?id=" + encodeURIComponent(t.slug);
+      if (!sitemapHas(xml, a)) addLocs.push(a);
+      if (!sitemapHas(xml, b)) addLocs.push(b);
+    });
+    if (addLocs.length && xml) {
+      xml = appendSitemapUrls(xml, addLocs);
+      sitemapSha = await putFile(token, "sitemap.xml", xml, sitemapSha, "blog: sitemap tags");
+    }
+
+    pendingTags = [];
   }
 
   async function loadBlog() {
@@ -145,47 +385,23 @@
     }
   }
 
-  async function fetchRemote(token) {
-    const res = await fetch(contentUrl() + "?ref=" + encodeURIComponent(GH.branch), {
-      headers: apiHeaders(token),
-    });
-    if (res.status === 404) {
-      blogSha = null;
-      return { updated: new Date().toISOString(), posts: [] };
-    }
-    if (!res.ok) {
-      const t = await res.text();
-      throw new Error("GitHub GET " + res.status + ": " + t.slice(0, 180));
-    }
-    const json = await res.json();
-    blogSha = json.sha || null;
-    const raw = atob(String(json.content || "").replace(/\n/g, ""));
-    const parsed = JSON.parse(raw);
+  async function fetchRemoteBlog(token) {
+    const file = await fetchFile(token, "data/blog.json");
+    blogSha = file.sha;
+    if (!file.text) return { updated: new Date().toISOString(), posts: [] };
+    const parsed = JSON.parse(file.text);
     if (!parsed.posts) parsed.posts = [];
     return parsed;
   }
 
   async function commitBlog(token, data, message) {
-    const body = JSON.stringify(data, null, 2);
-    const content = btoa(unescape(encodeURIComponent(body)));
-    const payload = {
-      message: message || "blog: update posts",
-      content: content,
-      branch: GH.branch,
-    };
-    if (blogSha) payload.sha = blogSha;
-    const res = await fetch(contentUrl(), {
-      method: "PUT",
-      headers: apiHeaders(token),
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const t = await res.text();
-      throw new Error("GitHub PUT " + res.status + ": " + t.slice(0, 220));
-    }
-    const json = await res.json();
-    blogSha = (json.content && json.content.sha) || blogSha;
-    return json;
+    blogSha = await putFile(
+      token,
+      "data/blog.json",
+      JSON.stringify(data, null, 2) + "\n",
+      blogSha,
+      message || "blog: update posts"
+    );
   }
 
   function isAuthed() {
@@ -247,6 +463,105 @@
     });
   })();
 
+  (function typeSeg() {
+    var wrap = document.querySelector(".ob-blog-types");
+    var input = document.getElementById("ob-blog-type");
+    if (!wrap || !input) return;
+    wrap.addEventListener("click", function (e) {
+      var btn = e.target.closest(".ob-blog-type-btn");
+      if (!btn || !wrap.contains(btn)) return;
+      var t = btn.getAttribute("data-type") || "post";
+      input.value = t;
+      wrap.querySelectorAll(".ob-blog-type-btn").forEach(function (b) {
+        b.classList.toggle("is-on", b === btn);
+      });
+    });
+  })();
+
+  (function mdTools() {
+    var body = document.getElementById("ob-blog-body");
+    var linkBtn = document.getElementById("ob-md-link");
+    var imgBtn = document.getElementById("ob-md-img");
+    var linkPanel = document.getElementById("ob-md-link-panel");
+    var imgPanel = document.getElementById("ob-md-img-panel");
+    var linkOk = document.getElementById("ob-md-link-ok");
+    var imgOk = document.getElementById("ob-md-img-ok");
+
+    function showPanel(which) {
+      var linkOn = which === "link";
+      var imgOn = which === "img";
+      if (linkPanel) linkPanel.hidden = !linkOn;
+      if (imgPanel) imgPanel.hidden = !imgOn;
+      if (linkBtn) linkBtn.setAttribute("aria-expanded", linkOn ? "true" : "false");
+      if (imgBtn) imgBtn.setAttribute("aria-expanded", imgOn ? "true" : "false");
+    }
+
+    if (linkBtn) {
+      linkBtn.addEventListener("click", function () {
+        showPanel(linkPanel && linkPanel.hidden ? "link" : "");
+      });
+    }
+    if (imgBtn) {
+      imgBtn.addEventListener("click", function () {
+        showPanel(imgPanel && imgPanel.hidden ? "img" : "");
+      });
+    }
+
+    if (linkOk) {
+      linkOk.addEventListener("click", function () {
+        var name = ((document.getElementById("ob-md-link-name") || {}).value || "").trim();
+        var tagsRaw = ((document.getElementById("ob-md-link-tags") || {}).value || "").trim();
+        var url = ((document.getElementById("ob-md-link-url") || {}).value || "").trim();
+        if (!name || !url) return;
+        var main = queuePendingTag(name);
+        tagsRaw.split(",").forEach(function (part) {
+          var n = part.trim();
+          if (!n) return;
+          queuePendingTag(n);
+        });
+        var md =
+          "[" +
+          name.replace(/[\[\]]/g, "") +
+          "](" +
+          url +
+          ") · [#" +
+          main.slug +
+          "](offtop.html?id=" +
+          encodeURIComponent(main.slug) +
+          ")";
+        insertAtCursor(body, md);
+        if (document.getElementById("ob-md-link-name")) document.getElementById("ob-md-link-name").value = "";
+        if (document.getElementById("ob-md-link-tags")) document.getElementById("ob-md-link-tags").value = "";
+        if (document.getElementById("ob-md-link-url")) document.getElementById("ob-md-link-url").value = "";
+        showPanel("");
+      });
+    }
+
+    if (imgOk) {
+      imgOk.addEventListener("click", function () {
+        var name = ((document.getElementById("ob-md-img-name") || {}).value || "").trim();
+        var url = ((document.getElementById("ob-md-img-url") || {}).value || "").trim();
+        if (!name || !url) return;
+        var tag = queuePendingTag(name);
+        var safe = name.replace(/[\[\]\"]/g, "");
+        var md =
+          "[![" +
+          safe +
+          "](" +
+          url +
+          ' "' +
+          safe +
+          '")](offtop.html?id=' +
+          encodeURIComponent(tag.slug) +
+          ")";
+        insertAtCursor(body, md);
+        if (document.getElementById("ob-md-img-name")) document.getElementById("ob-md-img-name").value = "";
+        if (document.getElementById("ob-md-img-url")) document.getElementById("ob-md-img-url").value = "";
+        showPanel("");
+      });
+    }
+  })();
+
   if (loginForm) {
     loginForm.addEventListener("submit", async function (e) {
       e.preventDefault();
@@ -260,7 +575,8 @@
         const h = await sha256(pass);
         if (h !== PASS_HASH) throw new Error("Неверный пароль");
         if (!token) throw new Error("Нужен GitHub token");
-        await fetchRemote(token);
+        await fetchRemoteBlog(token);
+        await refreshKnownSlugs(token);
         sessionStorage.setItem("ob_blog_ok", "1");
         sessionStorage.setItem("ob_blog_gh", token);
         showEditor(true);
@@ -277,6 +593,7 @@
     logoutBtn.addEventListener("click", function () {
       sessionStorage.removeItem("ob_blog_ok");
       sessionStorage.removeItem("ob_blog_gh");
+      pendingTags = [];
       showEditor(false);
     });
   }
@@ -295,7 +612,7 @@
       const body = ((document.getElementById("ob-blog-body") || {}).value || "").trim();
       if (!title || !body) return;
       try {
-        const remote = await fetchRemote(token);
+        const remote = await fetchRemoteBlog(token);
         const post = {
           id: "post-" + Date.now().toString(36),
           title: title,
@@ -303,10 +620,14 @@
           body: body,
           created: new Date().toISOString(),
           author: "oh_barbara",
+          tags: pendingTags.map(function (t) {
+            return t.slug;
+          }),
         };
         remote.posts = Array.isArray(remote.posts) ? remote.posts : [];
         remote.posts.unshift(post);
         remote.updated = post.created;
+        await commitPendingMeta(token);
         await commitBlog(token, remote, "blog: " + title.slice(0, 72));
         blogData = remote;
         render();
@@ -338,6 +659,7 @@
   });
 
   loadBlog();
+  refreshKnownSlugs("");
   if (gateOpen()) openModal();
 
   (function sunLogo() {
