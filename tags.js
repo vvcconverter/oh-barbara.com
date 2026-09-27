@@ -1314,6 +1314,7 @@
     "oh-barbara-connect": "oh-barbara_connect",
     "oh-barbara-comments": "oh-barbara_comments",
     "oh-barbara-chat": "oh-barbara_chat",
+    "oh-barbara-offtop": "oh-barbara_offtop",
     about: "oh-barbara_about",
     gallery: "oh-barbara_gallery",
         pictures: "oh-barbara-pictures",
@@ -1420,6 +1421,8 @@
     connect: "oh-barbara_connect",
     comments: "oh-barbara_comments",
     chat: "oh-barbara_chat",
+    offtop: "oh-barbara_offtop",
+    blog: "oh-barbara_offtop",
 
     twitch: "twitch-oh-barbara",
     твич: "твич-ох-барбара",
@@ -1724,6 +1727,7 @@
   function tagHref(slug) {
     var id = resolveId(slug);
     if (CLIP_SLUGS[id] || (BY_SLUG[id] && BY_SLUG[id].clip)) return "oh-barbara-clips.html?id=" + encodeURIComponent(id);
+    if (id === "oh-barbara_offtop" || id === "offtop" || id === "blog") return "offtop.html";
     return "index.html?id=" + encodeURIComponent(id);
   }
 
@@ -1802,6 +1806,7 @@
       "oh-barbara_connect": "Связь и площадки oh_barbara.",
       "oh-barbara_comments": "Комментарии к отзыву oh-barbara на ot-ziv.",
       "oh-barbara_chat": "Чат Twitch — oh_barbara на сайте.",
+      "oh-barbara_offtop": "Блог и offtop публикации oh_barbara.",
     };
     if (leads[id]) return leads[id];
     var name = tagName(id);

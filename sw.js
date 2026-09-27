@@ -1,4 +1,4 @@
-var CACHE = "ob-static-v30";
+var CACHE = "ob-static-v31";
 var PRECACHE = [
   "/",
   "/index.html",
@@ -8,6 +8,9 @@ var PRECACHE = [
   "/oz-comments.js",
   "/oh-barbara-clips.html",
   "/chat.js",
+  "/offtop.html",
+  "/offtop.js",
+  "/data/blog.json",
   "/data/clips.json",
   "/data/tags.json",
   "/assets/Oh-barbara.webp"
