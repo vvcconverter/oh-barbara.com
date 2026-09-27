@@ -236,6 +236,17 @@
     if (e.key === "Escape" && modal && !modal.hidden) closeModal();
   });
 
+  (function titleTip() {
+    var btn = document.getElementById("ob-blog-title-tip");
+    var msg = document.getElementById("ob-blog-title-tip-msg");
+    if (!btn || !msg) return;
+    btn.addEventListener("click", function () {
+      var open = msg.hidden;
+      msg.hidden = !open;
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  })();
+
   if (loginForm) {
     loginForm.addEventListener("submit", async function (e) {
       e.preventDefault();

@@ -183,10 +183,46 @@
 }
 .ob-blog-modal-close:hover{background:rgba(255,255,255,.08);}
 .ob-blog-form label{display:block;margin:.65rem 0 .3rem;font-size:.8rem;color:var(--teal);}
+.ob-blog-label-row{
+  position:relative;
+  display:flex;align-items:center;flex-wrap:wrap;gap:.45rem;
+  margin:.65rem 0 .3rem;
+}
+.ob-blog-label-row label{margin:0;}
+.ob-blog-tip-btn{
+  appearance:none;-webkit-appearance:none;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:1.35rem;height:1.35rem;padding:0;margin:0;
+  border:1.5px solid #fff;border-radius:50%;
+  background:transparent;color:#fff;
+  font:600 .72rem/1 var(--font-body),system-ui,sans-serif;
+  font-style:italic;cursor:pointer;
+}
+.ob-blog-tip-btn:hover,.ob-blog-tip-btn[aria-expanded="true"]{
+  background:rgba(255,255,255,.1);
+}
+.ob-blog-tip-msg{
+  flex:1 1 100%;
+  margin:.15rem 0 0;
+  padding:.55rem .7rem;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:.45rem;
+  background:#0a2a30;
+  color:#fff;
+  font-size:.82rem;line-height:1.4;
+}
+.ob-blog-tip-msg[hidden]{display:none!important;}
 .ob-blog-form input,.ob-blog-form textarea,.ob-blog-form select{
-  width:100%;box-sizing:border-box;font:inherit;color:var(--ink,#fff);
-  background:transparent;border:1px solid var(--line);border-radius:.5rem;
+  width:100%;box-sizing:border-box;font:inherit;color:#fff;
+  background:#061f24;border:1px solid var(--line);border-radius:.5rem;
   padding:.65rem .75rem;
+}
+.ob-blog-form select{
+  color-scheme:dark;
+  background:#061f24;color:#fff;
+}
+.ob-blog-form select option{
+  background:#061f24;color:#fff;
 }
 .ob-blog-form textarea{resize:vertical;min-height:8rem;}
 .ob-blog-form .btn{margin-top:.9rem;}
