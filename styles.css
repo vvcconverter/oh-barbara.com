@@ -192,14 +192,14 @@
   appearance:none;-webkit-appearance:none;
   box-sizing:border-box;
   display:inline-flex;align-items:center;justify-content:center;
-  width:.78em;height:.78em;min-width:0;padding:0;margin:0 0 .05em;
-  border:1px solid rgba(255,255,255,.65);border-radius:50%;
+  width:auto;height:auto;min-width:0;padding:0;margin:0;
+  border:0;border-radius:0;
   background:transparent;color:rgba(255,255,255,.8);
-  font-size:.7rem;font-weight:600;font-style:normal;line-height:1;
+  font-size:.85em;font-weight:400;font-style:normal;line-height:1;
   letter-spacing:0;cursor:pointer;vertical-align:baseline;
 }
 .ob-blog-tip-btn:hover,.ob-blog-tip-btn[aria-expanded="true"]{
-  color:#fff;border-color:#fff;background:rgba(255,255,255,.06);
+  color:#fff;border-color:transparent;background:transparent;
 }
 .ob-blog-tip-msg{
   flex:1 1 12rem;
