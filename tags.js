@@ -1313,6 +1313,7 @@
     "oh-barbara-tags": "oh-barbara_tags",
     "oh-barbara-connect": "oh-barbara_connect",
     "oh-barbara-comments": "oh-barbara_comments",
+    "oh-barbara-chat": "oh-barbara_chat",
     about: "oh-barbara_about",
     gallery: "oh-barbara_gallery",
         pictures: "oh-barbara-pictures",
@@ -1418,6 +1419,7 @@
     tags: "oh-barbara_tags",
     connect: "oh-barbara_connect",
     comments: "oh-barbara_comments",
+    chat: "oh-barbara_chat",
 
     twitch: "twitch-oh-barbara",
     твич: "твич-ох-барбара",
@@ -1799,6 +1801,7 @@
       "oh-barbara_tags": "Теги страницы oh_barbara.",
       "oh-barbara_connect": "Связь и площадки oh_barbara.",
       "oh-barbara_comments": "Комментарии к отзыву oh-barbara на ot-ziv.",
+      "oh-barbara_chat": "Чат Twitch — oh_barbara на сайте.",
     };
     if (leads[id]) return leads[id];
     var name = tagName(id);
