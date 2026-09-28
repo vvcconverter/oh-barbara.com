@@ -83,7 +83,7 @@
 .nav-comments{
   display:inline-flex;
   align-items:center;
-  gap:.45rem;
+  gap:1.15rem;
   white-space:nowrap;
   line-height:1.2;
 }
@@ -91,30 +91,30 @@
   display:inline-flex;align-items:center;justify-content:center;
   align-self:center;
   box-sizing:border-box;
-  width:1.85rem;height:1.85rem;min-width:1.85rem;min-height:1.85rem;
+  width:2rem;height:2rem;min-width:2rem;min-height:2rem;
   margin:0;padding:0;
   font-family:var(--font-body),system-ui,sans-serif;
   font-size:1.05rem;font-weight:600;line-height:1;
   letter-spacing:0;text-transform:none;
   color:#fff!important;text-decoration:none;
-  background:var(--teal-btn,#276660);
-  border:1px solid var(--teal-btn,#276660);
+  background:transparent!important;
+  border:1.5px solid rgba(255,255,255,.72)!important;
   border-radius:4px;
   box-shadow:none;cursor:pointer;
   -webkit-appearance:none;appearance:none;
   vertical-align:middle;
-  transition:background .2s ease,border-color .2s ease,transform .2s ease;
+  transition:background .25s ease,border-color .25s ease,transform .25s ease,color .25s ease;
 }
 .nav-blog:hover,.nav-blog:focus-visible{
-  background:var(--teal-btn-hover,#2f7a72);
-  border-color:var(--teal-btn-hover,#2f7a72);
+  background:rgba(255,255,255,.08)!important;
+  border-color:#fff!important;
   color:#fff!important;
   outline:none;
   transform:translateY(-1px);
 }
 .nav-blog.is-on,.nav-blog[aria-current="page"]{
-  background:var(--teal-btn,#276660);
-  border-color:var(--teal-btn,#276660);
+  background:rgba(255,255,255,.08)!important;
+  border-color:#fff!important;
   color:#fff!important;
 }
 @media (max-width:768px){
@@ -129,7 +129,7 @@
   .site-header .nav-comments>a{display:none!important;}
   .site-header .nav-blog{
     display:inline-flex!important;
-    width:2rem;height:2rem;min-width:2rem;min-height:2rem;
+    width:2.15rem;height:2.15rem;min-width:2.15rem;min-height:2.15rem;
     font-size:1.15rem;
   }
 }
@@ -389,4 +389,106 @@
 }
 @media (prefers-reduced-motion:reduce){
   .site-header .logo.is-sunlit{animation:none!important}
+}
+
+/* CONNECT ghost: project buttons only (not gallery .pic links) */
+.btn,
+.btn-primary,
+.btn-ghost,
+.btn-pink,
+a.btn,
+a.btn-primary,
+a.btn-ghost,
+a.btn-pink,
+a.header-cta,
+.header-cta,
+.hero-actions .btn,
+.hero-actions .btn-primary,
+.hero-actions .btn-ghost,
+.hero-actions .btn-pink,
+.ob-chat-fab,
+.ob-chat-close,
+.ob-blog-type-btn,
+.ob-blog-edit-btn,
+.ob-blog-del-btn,
+.ob-blog-md-ico,
+.ob-blog-modal-close,
+.ob-blog-tip-btn,
+.ob-blog-md-panel .btn,
+.ob-blog-editor-actions .btn,
+.ob-blog-editor-actions .btn-primary,
+.nav-blog,
+#ob-open-twitch-embed,
+.oz-c-form button[type="submit"],
+.oz-c-form .btn,
+#oz-clist-more,
+#oz-clist-less,
+button.pic-more,
+button.pic-less,
+.lightbox-close,
+.lightbox-nav,
+.lightbox-prev,
+.lightbox-next,
+.stream-detach-close{
+  background:transparent!important;
+  border:1.5px solid rgba(255,255,255,.72)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+  border-radius:4px!important;
+}
+.btn:hover,
+.btn:focus-visible,
+.btn-primary:hover,
+.btn-primary:focus-visible,
+.btn-ghost:hover,
+.btn-ghost:focus-visible,
+.btn-pink:hover,
+.btn-pink:focus-visible,
+a.btn:hover,
+a.header-cta:hover,
+.header-cta:hover,
+.header-cta:focus-visible,
+.hero-actions .btn:hover,
+.hero-actions .btn-primary:hover,
+.hero-actions .btn-primary:focus-visible,
+.hero-actions .btn-ghost:hover,
+.ob-chat-fab:hover,
+.ob-chat-fab:focus-visible,
+.ob-chat-close:hover,
+.ob-blog-type-btn:hover,
+.ob-blog-type-btn:focus-visible,
+.ob-blog-edit-btn:hover,
+.ob-blog-del-btn:hover,
+.ob-blog-md-ico:hover,
+.ob-blog-md-ico[aria-expanded="true"],
+.ob-blog-modal-close:hover,
+.ob-blog-tip-btn:hover,
+.ob-blog-md-panel .btn:hover,
+.ob-blog-editor-actions .btn:hover,
+.ob-blog-editor-actions .btn-primary:hover,
+.nav-blog:hover,
+.nav-blog:focus-visible,
+#ob-open-twitch-embed:hover,
+.oz-c-form button[type="submit"]:hover,
+button.pic-more:hover,
+button.pic-less:hover,
+.lightbox-close:hover,
+.lightbox-nav:hover,
+.stream-detach-close:hover{
+  background:rgba(255,255,255,.08)!important;
+  border-color:#fff!important;
+  color:#fff!important;
+}
+.ob-blog-type-btn.is-on,
+.nav-blog.is-on,
+.nav-blog[aria-current="page"]{
+  background:rgba(255,255,255,.08)!important;
+  border-color:#fff!important;
+  color:#fff!important;
+}
+button.pic-more[hidden],
+button.pic-less[hidden],
+#oz-clist-more[hidden],
+#oz-clist-less[hidden]{
+  display:none!important;
 }
