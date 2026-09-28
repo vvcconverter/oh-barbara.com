@@ -344,18 +344,16 @@
   }
 
   function uniqueSlug(base) {
-    var root = slugify(base) || "tag";
-    var slug = root;
-    var n = 1;
-    while (knownSlugs[slug] || pendingTags.some(function (t) { return t.slug === slug; })) {
-      slug = root + String(n);
-      n += 1;
-    }
-    return slug;
+    // Same name → same slug. Do not mint телега1/2/3 junk for sitemap.
+    return slugify(base) || "tag";
   }
 
   function queuePendingTag(name, extra) {
     var slug = uniqueSlug(name);
+    var reuse = pendingTags.find(function (t) {
+      return t && (t.slug === slug || slugify(t.name) === slug);
+    });
+    if (reuse) return reuse;
     var tag = {
       slug: slug,
       name: String(name || slug).trim() || slug,
@@ -474,10 +472,9 @@
     let xml = sm.text || "";
     const addLocs = [];
     fresh.forEach(function (t) {
-      const a = "https://oh-barbara.com/offtop.html?id=" + encodeURIComponent(t.slug);
-      const b = "https://oh-barbara.com/index.html?id=" + encodeURIComponent(t.slug);
-      if (!sitemapHas(xml, a)) addLocs.push(a);
-      if (!sitemapHas(xml, b)) addLocs.push(b);
+      const a = "https://oh-barbara.com/offtop.html?id=" + String(t.slug);
+      const aEnc = "https://oh-barbara.com/offtop.html?id=" + encodeURIComponent(t.slug);
+      if (!sitemapHas(xml, a) && !sitemapHas(xml, aEnc)) addLocs.push(a);
     });
     if (addLocs.length && xml) {
       xml = appendSitemapUrls(xml, addLocs);
