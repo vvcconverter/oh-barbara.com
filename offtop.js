@@ -239,7 +239,12 @@
         (admin && p.id
           ? '<button type="button" class="ob-blog-edit-btn" data-edit-id="' +
             esc(p.id) +
-            '">Изменить</button>'
+            '">Изменить</button>' +
+            '<button type="button" class="ob-blog-del-btn" data-del-id="' +
+            esc(p.id) +
+            '" title="удалить безвозвратно" aria-label="удалить безвозвратно">' +
+            '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9zm-1 12h12a1 1 0 0 0 1-1V7H5v13a1 1 0 0 0 1 1z"/></svg>' +
+            "</button>"
           : "") +
         "</header>" +
         "<h2 itemprop=\"headline\">" +
@@ -530,6 +535,18 @@
     if (logoutBtn) logoutBtn.hidden = !on;
   }
 
+  function clearAdminUrl() {
+    try {
+      var raw = new URLSearchParams(location.search).get("id") || "";
+      var id = raw;
+      try {
+        id = decodeURIComponent(raw);
+      } catch (e) {}
+      if (id !== GATE && raw !== GATE) return;
+      history.replaceState(null, "", "offtop.html" + (location.hash || ""));
+    } catch (e) {}
+  }
+
   function openModal() {
     if (!modal) return;
     modal.hidden = false;
@@ -544,6 +561,8 @@
     if (!modal) return;
     modal.hidden = true;
     document.body.style.overflow = "";
+    clearEditorFields();
+    clearAdminUrl();
   }
 
   function gateOpen() {
@@ -722,9 +741,36 @@
 
   if (feed) {
     feed.addEventListener("click", function (e) {
-      var btn = e.target.closest("[data-edit-id]");
-      if (!btn || !feed.contains(btn)) return;
-      startEdit(btn.getAttribute("data-edit-id"));
+      var editBtn = e.target.closest("[data-edit-id]");
+      if (editBtn && feed.contains(editBtn)) {
+        startEdit(editBtn.getAttribute("data-edit-id"));
+        return;
+      }
+      var delBtn = e.target.closest("[data-del-id]");
+      if (!delBtn || !feed.contains(delBtn)) return;
+      var delId = delBtn.getAttribute("data-del-id");
+      if (!delId || !isAuthed()) return;
+      (async function () {
+        var token = sessionStorage.getItem("ob_blog_gh") || "";
+        try {
+          delBtn.disabled = true;
+          var remote = await fetchRemoteBlog(token);
+          remote.posts = (Array.isArray(remote.posts) ? remote.posts : []).filter(function (p) {
+            return p && p.id !== delId;
+          });
+          remote.updated = new Date().toISOString();
+          await commitBlog(token, remote, "blog: delete " + delId);
+          blogData = remote;
+          if (editingId === delId) {
+            clearEditorFields();
+            closeModal();
+          }
+          render();
+        } catch (err) {
+          delBtn.disabled = false;
+          window.alert(err.message || String(err));
+        }
+      })();
     });
   }
 
@@ -771,10 +817,7 @@
           blogData = remote;
           render();
           clearEditorFields();
-          if (saveOk) {
-            saveOk.hidden = false;
-            saveOk.textContent = "Сохранено.";
-          }
+          closeModal();
         } else {
           const post = {
             id: "post-" + Date.now().toString(36),
