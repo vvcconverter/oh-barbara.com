@@ -250,6 +250,7 @@
         "</div>";
       feed.appendChild(art);
     });
+    document.body.classList.add("is-feed-ready");
   }
 
   async function sha256(text) {
@@ -496,6 +497,7 @@
         empty.hidden = false;
         empty.textContent = "Не удалось загрузить блог.";
       }
+      document.body.classList.add("is-feed-ready");
     }
   }
 
@@ -826,13 +828,27 @@
     var head = document.querySelector(".site-header");
     if (!head) return;
     var last = window.scrollY || 0;
+    var armed = false;
     function onScroll() {
       var y = window.scrollY || 0;
+      if (!armed) {
+        last = y;
+        return;
+      }
       head.classList.toggle("is-hidden", y > last && y > 64);
       last = y;
     }
-    onScroll();
+    function arm() {
+      head.classList.remove("is-hidden");
+      last = window.scrollY || 0;
+      setTimeout(function () {
+        last = window.scrollY || 0;
+        armed = true;
+      }, 200);
+    }
     addEventListener("scroll", onScroll, { passive: true });
+    if (document.readyState === "complete") arm();
+    else addEventListener("load", arm);
   })();
 
   (function sunLogo() {
