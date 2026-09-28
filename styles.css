@@ -663,3 +663,28 @@ a.header-cta:hover,
     display:none!important;
   }
 }
+#clips.clips-frame{
+  position:relative!important;
+  padding:0!important;
+}
+#clips.clips-frame iframe{
+  display:block!important;
+  position:absolute!important;
+  top:5px!important;
+  left:0!important;
+  width:100%!important;
+  height:calc(100% - 10px)!important;
+}
+#oh-barbara_oh-barbara-mp4.vod-frame{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  padding:5px 0!important;
+}
+#oh-barbara_oh-barbara-mp4.vod-frame video{
+  display:block!important;
+  position:static!important;
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+}
