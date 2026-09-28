@@ -124,6 +124,17 @@
   window.addEventListener("resize",()=>{if(!panel.hidden)applyPanelShift()});
   if(siteLoaded)loadQueue();else window.addEventListener("load",()=>{siteLoaded=true;loadQueue()},{once:true});
 })();
+window.addEventListener("message",e=>{
+  const d=e.data;
+  if(!d||d.type!=="ob-clips-height"||!(d.h>0))return;
+  const frame=document.getElementById("clips");
+  if(!frame)return;
+  const cs=getComputedStyle(frame);
+  const borders=(parseFloat(cs.borderTopWidth)||0)+(parseFloat(cs.borderBottomWidth)||0);
+  frame.style.height=(d.h+10+borders)+"px";
+  frame.style.maxHeight="none";
+  frame.style.minHeight="0";
+});
 (()=>{
   const startArrowAnimation=()=>document.documentElement.classList.add("ob-site-loaded");
   if(document.readyState==="complete")startArrowAnimation();
