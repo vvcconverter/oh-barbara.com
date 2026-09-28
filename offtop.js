@@ -623,18 +623,17 @@
         var tagsRaw = ((document.getElementById("ob-md-link-tags") || {}).value || "").trim();
         var url = ((document.getElementById("ob-md-link-url") || {}).value || "").trim();
         if (!name || !url) return;
-        var tagLabel = name;
-        var tagSlug = queuePendingTag(name).slug;
-        if (tagsRaw) {
-          var firstTag = tagsRaw.split(",")[0].trim();
-          if (firstTag) {
-            tagLabel = firstTag.replace(/^#+/, "");
-            tagSlug = queuePendingTag(firstTag).slug;
-          }
-        }
+        var first = "";
         tagsRaw.split(",").forEach(function (part) {
-          var n = part.trim();
-          if (n) queuePendingTag(n);
+          var n = part.trim().replace(/^#+/, "");
+          if (n && !first) first = n;
+        });
+        var tagLabel = first || name;
+        var tag = queuePendingTag(tagLabel);
+        if (slugify(name) !== tag.slug) queuePendingTag(name);
+        tagsRaw.split(",").forEach(function (part) {
+          var n = part.trim().replace(/^#+/, "");
+          if (n && slugify(n) !== tag.slug && slugify(n) !== slugify(name)) queuePendingTag(n);
         });
         var safeName = name.replace(/[\[\]]/g, "");
         var safeTag = tagLabel.replace(/[\[\]]/g, "");
@@ -646,7 +645,7 @@
           ") [#" +
           safeTag +
           "](offtop.html?id=" +
-          encodeURIComponent(tagSlug) +
+          encodeURIComponent(tag.slug) +
           ")";
         insertAtCursor(body, md);
         if (document.getElementById("ob-md-link-name")) document.getElementById("ob-md-link-name").value = "";
