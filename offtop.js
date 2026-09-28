@@ -4,7 +4,6 @@
     repo: "oh-barbara.com",
     branch: "main",
   };
-  // default password: ohbarbara  — смените PASS_HASH в offtop.js после деплоя
   const PASS_HASH =
     "acaff93184f85d24e4c78d891dd060a6f2e072604008d0a2f8ce966ee1417d1a";
 
@@ -15,7 +14,6 @@
   const empty = document.getElementById("ob-blog-empty");
   const modal = document.getElementById("ob-blog-modal");
   const closeBtn = document.getElementById("ob-blog-modal-close");
-  // offtop.html?id=%D0%B0%D0%B4%D0%BC%D0%B8%D0%BD  (не в tags/sitemap)
   const GATE = decodeURIComponent("%D0%B0%D0%B4%D0%BC%D0%B8%D0%BD");
   const loginForm = document.getElementById("ob-blog-login");
   const editorForm = document.getElementById("ob-blog-editor");
@@ -72,11 +70,28 @@
   }
 
   function mdToHtml(src) {
-    let s = esc(src);
+    var s = String(src || "");
     s = s.replace(
-      /!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"([^\"]*)\")?\)/g,
+      /\[!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)\]\(([^)\s]+)\)/g,
+      function (_, alt, imgUrl, title, href) {
+        var t = title ? ' title="' + esc(title) + '"' : "";
+        return (
+          '<a href="' +
+          esc(href) +
+          '"><img src="' +
+          esc(imgUrl) +
+          '" alt="' +
+          esc(alt) +
+          '"' +
+          t +
+          ' loading="lazy" decoding="async" /></a>'
+        );
+      }
+    );
+    s = s.replace(
+      /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,
       function (_, alt, url, title) {
-        const t = title ? ' title="' + esc(title) + '"' : "";
+        var t = title ? ' title="' + esc(title) + '"' : "";
         return (
           '<img src="' +
           esc(url) +
@@ -84,7 +99,7 @@
           esc(alt) +
           '"' +
           t +
-          " loading=\"lazy\" decoding=\"async\" />"
+          ' loading="lazy" decoding="async" />'
         );
       }
     );
@@ -93,11 +108,18 @@
         '<a href="' +
         esc(url) +
         '" target="_blank" rel="noopener noreferrer">' +
-        text +
+        esc(text) +
         "</a>"
       );
     });
-    return s.replace(/\n/g, "<br>");
+    return s
+      .split(/(<[^>]+>)/g)
+      .map(function (part) {
+        if (!part) return "";
+        if (part.charAt(0) === "<") return part;
+        return esc(part).replace(/\n/g, "<br>");
+      })
+      .join("");
   }
 
   function render() {
