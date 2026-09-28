@@ -172,8 +172,9 @@
   position:fixed;
   z-index:47;
   top:calc(var(--header-h,4.25rem) + .35rem);
-  right:var(--pad,2rem);
-  width:min(20rem,calc(100vw - 2rem));
+  left:calc(50% - 60px);
+  right:auto;
+  width:calc(min(20rem,calc(100vw - 2rem)) - 20px);
   padding:.7rem .75rem .8rem;
   border:1px solid var(--line);
   border-radius:.55rem;
@@ -253,8 +254,18 @@
   }
   .nav-bell-panel{
     top:calc(var(--header-h,3.75rem) + .4rem);
-    right:max(.7rem,env(safe-area-inset-right));
-    width:min(18.5rem,calc(100vw - 1.2rem));
+    left:var(--pad,1.25rem);
+    right:auto;
+    width:calc(50vw - var(--pad,1.25rem));
+  }
+  html.ob-bell-open .hero-portrait{
+    justify-self:end;
+    width:calc(50vw - var(--pad,1.25rem));
+  }
+}
+@media (min-width:769px){
+  html.ob-bell-open .hero-portrait{
+    transform:translate(calc(-1.35rem + 40px),0);
   }
 }
 @media (prefers-reduced-motion:reduce){
