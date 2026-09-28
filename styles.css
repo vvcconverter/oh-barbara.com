@@ -163,23 +163,25 @@
 }
 .ob-blog-admin-btns{
   position:absolute;top:1.05rem;right:1.1rem;
-  display:inline-flex;align-items:center;gap:.35rem;
+  display:inline-flex;align-items:stretch;gap:.35rem;
 }
 .ob-blog-edit-btn,
 .ob-blog-del-btn{
   appearance:none;-webkit-appearance:none;
+  box-sizing:border-box;
   margin:0;
-  border:1px solid rgba(255,255,255,.35);
+  border:1px solid rgba(255,255,255,.35);border-radius:4px;
   background:transparent;color:rgba(255,255,255,.9);
   font:600 .72rem/1.2 var(--font-body),system-ui,sans-serif;
   letter-spacing:.04em;text-transform:uppercase;cursor:pointer;
 }
 .ob-blog-edit-btn{
-  padding:.35rem .65rem;border-radius:4px;
+  display:inline-flex;align-items:center;
+  padding:.35rem .65rem;min-height:1.85rem;
 }
 .ob-blog-del-btn{
   display:inline-flex;align-items:center;justify-content:center;
-  width:1.7rem;height:1.7rem;padding:0;border-radius:50%;
+  width:1.85rem;min-width:1.85rem;height:1.85rem;padding:0;
 }
 .ob-blog-edit-btn:hover,
 .ob-blog-del-btn:hover{
@@ -187,7 +189,7 @@
   background:rgba(39,102,96,.35);color:#fff;
 }
 .ob-blog-del-btn:disabled{opacity:.45;cursor:default;}
-.ob-blog-del-btn svg{display:block;}
+.ob-blog-del-btn svg{display:block;width:1rem;height:1rem;}
 .ob-blog-type{color:var(--teal);font-weight:600;}
 .ob-blog-post h2{
   margin:0 0 .7rem;
