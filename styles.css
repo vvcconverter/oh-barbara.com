@@ -148,6 +148,18 @@
   margin:0 0 .55rem;font-size:.78rem;color:var(--muted);
   letter-spacing:.04em;text-transform:uppercase;
 }
+.ob-blog-edit-btn{
+  appearance:none;-webkit-appearance:none;
+  margin-left:auto;padding:.35rem .65rem;
+  border:1px solid rgba(255,255,255,.35);border-radius:4px;
+  background:transparent;color:rgba(255,255,255,.9);
+  font:600 .72rem/1.2 var(--font-body),system-ui,sans-serif;
+  letter-spacing:.04em;text-transform:uppercase;cursor:pointer;
+}
+.ob-blog-edit-btn:hover{
+  border-color:var(--teal-btn,#276660);
+  background:rgba(39,102,96,.35);color:#fff;
+}
 .ob-blog-type{color:var(--teal);font-weight:600;}
 .ob-blog-post h2{
   margin:0 0 .7rem;

@@ -28,6 +28,61 @@
   let sitemapSha = null;
   let knownSlugs = Object.create(null);
   let pendingTags = [];
+  let editingId = null;
+
+  function findPost(id) {
+    var list = Array.isArray(blogData.posts) ? blogData.posts : [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id === id) return list[i];
+    }
+    return null;
+  }
+
+  function setTypeButtons(type) {
+    var input = document.getElementById("ob-blog-type");
+    var t = type || "post";
+    if (input) input.value = t;
+    document.querySelectorAll(".ob-blog-type-btn").forEach(function (b) {
+      b.classList.toggle("is-on", (b.getAttribute("data-type") || "") === t);
+    });
+  }
+
+  function setPublishLabel() {
+    var btn = editorForm && editorForm.querySelector('button[type="submit"]');
+    if (btn) btn.textContent = editingId ? "Сохранить" : "Опубликовать";
+  }
+
+  function clearEditorFields() {
+    editingId = null;
+    pendingTags = [];
+    var titleEl = document.getElementById("ob-blog-title");
+    var bodyEl = document.getElementById("ob-blog-body");
+    if (titleEl) titleEl.value = "";
+    if (bodyEl) bodyEl.value = "";
+    setTypeButtons("news");
+    setPublishLabel();
+  }
+
+  function fillEditor(post) {
+    if (!post) return;
+    editingId = post.id || null;
+    var titleEl = document.getElementById("ob-blog-title");
+    var bodyEl = document.getElementById("ob-blog-body");
+    if (titleEl) titleEl.value = post.title || "";
+    if (bodyEl) bodyEl.value = post.body || "";
+    setTypeButtons(post.type || "post");
+    setPublishLabel();
+    if (saveErr) saveErr.hidden = true;
+    if (saveOk) saveOk.hidden = true;
+  }
+
+  function startEdit(id) {
+    var post = findPost(id);
+    if (!post || !isAuthed()) return;
+    openModal();
+    showEditor(true);
+    fillEditor(post);
+  }
 
   function esc(s) {
     return String(s || "")
@@ -132,6 +187,7 @@
       n.remove();
     });
     if (empty) empty.hidden = true;
+    var admin = isAuthed();
     posts.forEach(function (p) {
       const art = document.createElement("article");
       art.className = "ob-blog-post reveal is-in";
@@ -149,6 +205,11 @@
         '" itemprop="datePublished">' +
         esc(fmtDate(p.created)) +
         "</time>" +
+        (admin && p.id
+          ? '<button type="button" class="ob-blog-edit-btn" data-edit-id="' +
+            esc(p.id) +
+            '">Изменить</button>'
+          : "") +
         "</header>" +
         "<h2 itemprop=\"headline\">" +
         esc(p.title) +
@@ -592,11 +653,14 @@
         const h = await sha256(pass);
         if (h !== PASS_HASH) throw new Error("Неверный пароль");
         if (!token) throw new Error("Нужен GitHub token");
-        await fetchRemoteBlog(token);
+        const remote = await fetchRemoteBlog(token);
         await refreshKnownSlugs(token);
         sessionStorage.setItem("ob_blog_ok", "1");
         sessionStorage.setItem("ob_blog_gh", token);
+        blogData = remote;
         showEditor(true);
+        setPublishLabel();
+        render();
       } catch (err) {
         if (loginErr) {
           loginErr.hidden = false;
@@ -610,8 +674,17 @@
     logoutBtn.addEventListener("click", function () {
       sessionStorage.removeItem("ob_blog_ok");
       sessionStorage.removeItem("ob_blog_gh");
-      pendingTags = [];
+      clearEditorFields();
       showEditor(false);
+      render();
+    });
+  }
+
+  if (feed) {
+    feed.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-edit-id]");
+      if (!btn || !feed.contains(btn)) return;
+      startEdit(btn.getAttribute("data-edit-id"));
     });
   }
 
@@ -630,29 +703,61 @@
       if (!title || !body) return;
       try {
         const remote = await fetchRemoteBlog(token);
-        const post = {
-          id: "post-" + Date.now().toString(36),
-          title: title,
-          type: type,
-          body: body,
-          created: new Date().toISOString(),
-          author: "oh_barbara",
-          tags: pendingTags.map(function (t) {
-            return t.slug;
-          }),
-        };
         remote.posts = Array.isArray(remote.posts) ? remote.posts : [];
-        remote.posts.unshift(post);
-        remote.updated = post.created;
-        await commitPendingMeta(token);
-        await commitBlog(token, remote, "blog: " + title.slice(0, 72));
-        blogData = remote;
-        render();
-        document.getElementById("ob-blog-title").value = "";
-        document.getElementById("ob-blog-body").value = "";
-        if (saveOk) {
-          saveOk.hidden = false;
-          saveOk.textContent = "Опубликовано. Через минуту появится на сайте после деплоя GitHub Pages.";
+        const now = new Date().toISOString();
+        if (editingId) {
+          var found = null;
+          for (var i = 0; i < remote.posts.length; i++) {
+            if (remote.posts[i] && remote.posts[i].id === editingId) {
+              found = remote.posts[i];
+              break;
+            }
+          }
+          if (!found) throw new Error("Пост не найден");
+          found.title = title;
+          found.type = type;
+          found.body = body;
+          found.updated = now;
+          if (pendingTags.length) {
+            found.tags = (found.tags || []).concat(
+              pendingTags.map(function (t) {
+                return t.slug;
+              })
+            );
+          }
+          remote.updated = now;
+          await commitPendingMeta(token);
+          await commitBlog(token, remote, "blog: edit " + title.slice(0, 64));
+          blogData = remote;
+          render();
+          clearEditorFields();
+          if (saveOk) {
+            saveOk.hidden = false;
+            saveOk.textContent = "Сохранено.";
+          }
+        } else {
+          const post = {
+            id: "post-" + Date.now().toString(36),
+            title: title,
+            type: type,
+            body: body,
+            created: now,
+            author: "oh_barbara",
+            tags: pendingTags.map(function (t) {
+              return t.slug;
+            }),
+          };
+          remote.posts.unshift(post);
+          remote.updated = now;
+          await commitPendingMeta(token);
+          await commitBlog(token, remote, "blog: " + title.slice(0, 72));
+          blogData = remote;
+          render();
+          clearEditorFields();
+          if (saveOk) {
+            saveOk.hidden = false;
+            saveOk.textContent = "Опубликовано.";
+          }
         }
       } catch (err) {
         if (saveErr) {
