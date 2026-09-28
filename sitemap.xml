@@ -8424,4 +8424,16 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://oh-barbara.com/offtop.html?id=%D0%B1%D0%BE%D0%BB%D0%B5%D1%8E2</loc>
+    <lastmod>2026-09-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://oh-barbara.com/index.html?id=%D0%B1%D0%BE%D0%BB%D0%B5%D1%8E2</loc>
+    <lastmod>2026-09-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
