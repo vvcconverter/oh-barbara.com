@@ -158,16 +158,47 @@
         '" loading="lazy" decoding="async" />'
       );
     });
-    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (_, text, url) {
-      return (
+    var out = "";
+    var i = 0;
+    while (i < s.length) {
+      var a = s.indexOf("[", i);
+      if (a < 0) {
+        out += s.slice(i);
+        break;
+      }
+      out += s.slice(i, a);
+      var b = s.indexOf("]", a + 1);
+      if (b < 0 || s.charAt(b + 1) !== "(") {
+        out += s.charAt(a);
+        i = a + 1;
+        continue;
+      }
+      var depth = 1;
+      var k = b + 2;
+      while (k < s.length && depth > 0) {
+        if (s.charAt(k) === "(") depth += 1;
+        else if (s.charAt(k) === ")") depth -= 1;
+        k += 1;
+      }
+      if (depth !== 0) {
+        out += s.charAt(a);
+        i = a + 1;
+        continue;
+      }
+      var label = s.slice(a + 1, b);
+      var href = s.slice(b + 2, k - 1).trim();
+      var ext = /^https?:\/\//i.test(href) || /^\/\//.test(href);
+      out +=
         '<a href="' +
-        esc(String(url || "").trim()) +
-        '" target="_blank" rel="noopener noreferrer">' +
-        esc(text) +
-        "</a>"
-      );
-    });
-    return s
+        esc(href) +
+        '"' +
+        (ext ? ' target="_blank" rel="noopener noreferrer"' : "") +
+        ">" +
+        esc(label) +
+        "</a>";
+      i = k;
+    }
+    return out
       .split(/(<[^>]+>)/g)
       .map(function (part) {
         if (!part) return "";
@@ -592,31 +623,31 @@
         var tagsRaw = ((document.getElementById("ob-md-link-tags") || {}).value || "").trim();
         var url = ((document.getElementById("ob-md-link-url") || {}).value || "").trim();
         if (!name || !url) return;
-        var main = queuePendingTag(name);
         var tagLabel = name;
-        var tagSlug = main.slug;
-        var parts = tagsRaw.split(",");
-        for (var i = 0; i < parts.length; i++) {
-          var n = parts[i].trim();
-          if (!n) continue;
-          var t = queuePendingTag(n);
-          if (i === 0) {
-            tagLabel = n;
-            tagSlug = t.slug;
+        var tagSlug = queuePendingTag(name).slug;
+        if (tagsRaw) {
+          var firstTag = tagsRaw.split(",")[0].trim();
+          if (firstTag) {
+            tagLabel = firstTag.replace(/^#+/, "");
+            tagSlug = queuePendingTag(firstTag).slug;
           }
         }
+        tagsRaw.split(",").forEach(function (part) {
+          var n = part.trim();
+          if (n) queuePendingTag(n);
+        });
         var safeName = name.replace(/[\[\]]/g, "");
-        var safeTag = tagLabel.replace(/[()#\[\]]/g, "");
+        var safeTag = tagLabel.replace(/[\[\]]/g, "");
         var md =
           "ссылка: [" +
           safeName +
           "](" +
           url +
-          ") - ([#" +
+          ") [#" +
           safeTag +
           "](offtop.html?id=" +
           encodeURIComponent(tagSlug) +
-          "))";
+          ")";
         insertAtCursor(body, md);
         if (document.getElementById("ob-md-link-name")) document.getElementById("ob-md-link-name").value = "";
         if (document.getElementById("ob-md-link-tags")) document.getElementById("ob-md-link-tags").value = "";
