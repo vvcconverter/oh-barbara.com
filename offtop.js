@@ -893,7 +893,8 @@
         last = y;
         return;
       }
-      head.classList.toggle("is-hidden", y > last && y > 64);
+      if (y <= 8) head.classList.remove("is-hidden");
+      else if (y > last && y > 64) head.classList.add("is-hidden");
       last = y;
     }
     function arm() {

@@ -1,4 +1,4 @@
-var CACHE = "ob-static-v31";
+var CACHE = "ob-static-v32";
 var PRECACHE = [
   "/",
   "/index.html",
