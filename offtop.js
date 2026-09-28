@@ -127,41 +127,41 @@
   function mdToHtml(src) {
     var s = String(src || "");
     s = s.replace(
-      /\[!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)\]\(([^)\s]+)\)/g,
-      function (_, alt, imgUrl, title, href) {
-        var t = title ? ' title="' + esc(title) + '"' : "";
+      /\[!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)/g,
+      function (_, alt, imgInner, href) {
+        var imgUrl = String(imgInner || "").trim().split(/\s+/)[0];
         return (
           '<a href="' +
-          esc(href) +
+          esc(String(href || "").trim()) +
           '"><img src="' +
           esc(imgUrl) +
           '" alt="' +
           esc(alt) +
-          '"' +
-          t +
-          ' loading="lazy" decoding="async" /></a>'
-        );
-      }
-    );
-    s = s.replace(
-      /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,
-      function (_, alt, url, title) {
-        var t = title ? ' title="' + esc(title) + '"' : "";
-        return (
-          '<img src="' +
-          esc(url) +
-          '" alt="' +
+          '" title="' +
           esc(alt) +
-          '"' +
-          t +
-          ' loading="lazy" decoding="async" />'
+          '" loading="lazy" decoding="async" /></a>'
         );
       }
     );
-    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, text, url) {
+    s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function (_, alt, inner) {
+      var raw = String(inner || "").trim();
+      var m = raw.match(/^(\S+)(?:\s+"([^"]*)")?$/);
+      var url = m ? m[1] : raw;
+      var title = m && m[2] ? m[2] : alt;
+      return (
+        '<img src="' +
+        esc(url) +
+        '" alt="' +
+        esc(alt) +
+        '" title="' +
+        esc(title) +
+        '" loading="lazy" decoding="async" />'
+      );
+    });
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (_, text, url) {
       return (
         '<a href="' +
-        esc(url) +
+        esc(String(url || "").trim()) +
         '" target="_blank" rel="noopener noreferrer">' +
         esc(text) +
         "</a>"
@@ -494,6 +494,7 @@
   function showEditor(on) {
     if (loginForm) loginForm.hidden = !!on;
     if (editorForm) editorForm.hidden = !on;
+    if (logoutBtn) logoutBtn.hidden = !on;
   }
 
   function openModal() {
@@ -592,17 +593,30 @@
         var url = ((document.getElementById("ob-md-link-url") || {}).value || "").trim();
         if (!name || !url) return;
         var main = queuePendingTag(name);
-        tagsRaw.split(",").forEach(function (part) {
-          var n = part.trim();
-          if (!n) return;
-          queuePendingTag(n);
-        });
+        var tagLabel = name;
+        var tagSlug = main.slug;
+        var parts = tagsRaw.split(",");
+        for (var i = 0; i < parts.length; i++) {
+          var n = parts[i].trim();
+          if (!n) continue;
+          var t = queuePendingTag(n);
+          if (i === 0) {
+            tagLabel = n;
+            tagSlug = t.slug;
+          }
+        }
+        var safeName = name.replace(/[\[\]]/g, "");
+        var safeTag = tagLabel.replace(/[()#\[\]]/g, "");
         var md =
-          "[ссылка](" +
+          "ссылка: [" +
+          safeName +
+          "](" +
           url +
-          ") (#" +
-          name.replace(/[()#\[\]]/g, "") +
-          ")";
+          ") - ([#" +
+          safeTag +
+          "](offtop.html?id=" +
+          encodeURIComponent(tagSlug) +
+          "))";
         insertAtCursor(body, md);
         if (document.getElementById("ob-md-link-name")) document.getElementById("ob-md-link-name").value = "";
         if (document.getElementById("ob-md-link-tags")) document.getElementById("ob-md-link-tags").value = "";
@@ -623,9 +637,7 @@
           safe +
           "](" +
           url +
-          ' "' +
-          safe +
-          '")](offtop.html?id=' +
+          ")](offtop.html?id=" +
           encodeURIComponent(tag.slug) +
           ")";
         insertAtCursor(body, md);
@@ -779,6 +791,19 @@
   loadBlog();
   refreshKnownSlugs("");
   if (gateOpen()) openModal();
+
+  (function headerScroll() {
+    var head = document.querySelector(".site-header");
+    if (!head) return;
+    var last = window.scrollY || 0;
+    function onScroll() {
+      var y = window.scrollY || 0;
+      head.classList.toggle("is-hidden", y > last && y > 64);
+      last = y;
+    }
+    onScroll();
+    addEventListener("scroll", onScroll, { passive: true });
+  })();
 
   (function sunLogo() {
     function run() {
