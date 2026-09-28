@@ -225,7 +225,9 @@
       art.setAttribute("itemprop", "blogPost");
       art.setAttribute("itemscope", "");
       art.setAttribute("itemtype", "https://schema.org/BlogPosting");
-      if (p.id) art.id = p.id;
+      var permalink = p.slug || postSitemapId(p.title || "");
+      if (permalink) art.id = permalink;
+      else if (p.id) art.id = p.id;
       art.innerHTML =
         '<header class="ob-blog-post-head">' +
         '<span class="ob-blog-type">' +
@@ -257,6 +259,21 @@
       feed.appendChild(art);
     });
     document.body.classList.add("is-feed-ready");
+    try {
+      var raw = new URLSearchParams(location.search).get("id") || "";
+      var q = raw;
+      try {
+        q = decodeURIComponent(raw);
+      } catch (e) {}
+      if (q && q !== GATE && raw !== GATE) {
+        var target = document.getElementById(q);
+        if (target) {
+          requestAnimationFrame(function () {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        }
+      }
+    } catch (e) {}
   }
 
   async function sha256(text) {
@@ -414,6 +431,10 @@
     return xml.indexOf("<loc>" + loc + "</loc>") !== -1;
   }
 
+  function postSitemapId(title) {
+    return "ох-барбара-" + (slugify(title) || "post");
+  }
+
   function appendSitemapUrls(xml, urls) {
     var block = urls
       .map(function (u) {
@@ -466,22 +487,19 @@
         "blog: tags " + fresh.map(function (t) { return t.slug; }).join(", ")
       );
     }
+    pendingTags = [];
+  }
 
+  async function commitPostSitemap(token, title) {
+    const id = postSitemapId(title);
+    const a = "https://oh-barbara.com/offtop.html?id=" + id;
+    const aEnc = "https://oh-barbara.com/offtop.html?id=" + encodeURIComponent(id);
     const sm = await fetchFile(token, "sitemap.xml");
     sitemapSha = sm.sha;
     let xml = sm.text || "";
-    const addLocs = [];
-    fresh.forEach(function (t) {
-      const a = "https://oh-barbara.com/offtop.html?id=" + String(t.slug);
-      const aEnc = "https://oh-barbara.com/offtop.html?id=" + encodeURIComponent(t.slug);
-      if (!sitemapHas(xml, a) && !sitemapHas(xml, aEnc)) addLocs.push(a);
-    });
-    if (addLocs.length && xml) {
-      xml = appendSitemapUrls(xml, addLocs);
-      sitemapSha = await putFile(token, "sitemap.xml", xml, sitemapSha, "blog: sitemap tags");
-    }
-
-    pendingTags = [];
+    if (!xml || sitemapHas(xml, a) || sitemapHas(xml, aEnc)) return;
+    xml = appendSitemapUrls(xml, [a]);
+    sitemapSha = await putFile(token, "sitemap.xml", xml, sitemapSha, "blog: sitemap post");
   }
 
   async function loadBlog() {
@@ -801,6 +819,7 @@
           found.title = title;
           found.type = type;
           found.body = body;
+          found.slug = postSitemapId(title);
           found.updated = now;
           if (pendingTags.length) {
             found.tags = (found.tags || []).concat(
@@ -811,6 +830,7 @@
           }
           remote.updated = now;
           await commitPendingMeta(token);
+          await commitPostSitemap(token, title);
           await commitBlog(token, remote, "blog: edit " + title.slice(0, 64));
           blogData = remote;
           render();
@@ -822,6 +842,7 @@
             title: title,
             type: type,
             body: body,
+            slug: postSitemapId(title),
             created: now,
             author: "oh_barbara",
             tags: pendingTags.map(function (t) {
@@ -831,6 +852,7 @@
           remote.posts.unshift(post);
           remote.updated = now;
           await commitPendingMeta(token);
+          await commitPostSitemap(token, title);
           await commitBlog(token, remote, "blog: " + title.slice(0, 72));
           blogData = remote;
           render();
