@@ -598,14 +598,10 @@
           queuePendingTag(n);
         });
         var md =
-          "[" +
-          name.replace(/[\[\]]/g, "") +
-          "](" +
+          "[ссылка](" +
           url +
-          ") · [#" +
-          main.slug +
-          "](offtop.html?id=" +
-          encodeURIComponent(main.slug) +
+          ") (#" +
+          name.replace(/[()#\[\]]/g, "") +
           ")";
         insertAtCursor(body, md);
         if (document.getElementById("ob-md-link-name")) document.getElementById("ob-md-link-name").value = "";
