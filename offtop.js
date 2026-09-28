@@ -399,6 +399,47 @@
     textarea.setSelectionRange(pos, pos);
   }
 
+  function normalizeOfftopHref(base, label) {
+    var clean = String(label || "").trim().replace(/^#+/, "");
+    if (!clean) return String(base || "");
+    var tag = queuePendingTag(clean);
+    return "offtop.html?id=" + encodeURIComponent(tag.slug);
+  }
+
+  function normalizeBodyLinks(bodyText) {
+    var body = String(bodyText || "");
+
+    // [#Тег](offtop.html?id=old-slug) -> rebuild id from tag label
+    body = body.replace(
+      /\[#([^\]]+)\]\(((?:https?:\/\/[^)\s]+\/)?offtop\.html\?id=[^)]+)\)/gi,
+      function (_, label) {
+        var clean = String(label || "").trim();
+        if (!clean) return _;
+        return "[#" + clean + "](" + normalizeOfftopHref("offtop.html", clean) + ")";
+      }
+    );
+
+    // [![Alt](img)](offtop.html?id=old-slug) -> rebuild id from alt text
+    body = body.replace(
+      /\[!\[([^\]]*)\]\(([^)]+)\)\]\(((?:https?:\/\/[^)\s]+\/)?offtop\.html\?id=[^)]+)\)/gi,
+      function (_, alt, img) {
+        var cleanAlt = String(alt || "").trim();
+        if (!cleanAlt) return _;
+        return (
+          "[![" +
+          cleanAlt +
+          "](" +
+          String(img || "").trim() +
+          ")](" +
+          normalizeOfftopHref("offtop.html", cleanAlt) +
+          ")"
+        );
+      }
+    );
+
+    return body;
+  }
+
   async function refreshKnownSlugs(token) {
     knownSlugs = Object.create(null);
     try {
@@ -796,7 +837,10 @@
       const token = sessionStorage.getItem("ob_blog_gh") || "";
       const title = ((document.getElementById("ob-blog-title") || {}).value || "").trim();
       const type = (document.getElementById("ob-blog-type") || {}).value || "post";
-      const body = ((document.getElementById("ob-blog-body") || {}).value || "").trim();
+      const bodyEl = document.getElementById("ob-blog-body");
+      const bodyRaw = ((bodyEl || {}).value || "").trim();
+      const body = normalizeBodyLinks(bodyRaw);
+      if (bodyEl && body !== bodyRaw) bodyEl.value = body;
       if (!title || !body) return;
       try {
         const remote = await fetchRemoteBlog(token);
