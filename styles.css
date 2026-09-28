@@ -657,3 +657,9 @@ a.header-cta:hover,
   -webkit-backdrop-filter:none!important;
   isolation:isolate;
 }
+@media (max-width:463px){
+  .connect .link-ico,
+  .connect .link-handle{
+    display:none!important;
+  }
+}
