@@ -221,6 +221,10 @@
   0%,100%{transform:scale(1)}
   50%{transform:scale(1.06)}
 }
+.nav-bell-meta,
+.nav-bell-text{
+  padding-right:1.6rem;
+}
 .nav-bell-meta{
   margin:0 0 .25rem;
   color:var(--muted);
