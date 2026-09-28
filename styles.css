@@ -354,10 +354,16 @@
 }
 .ob-blog-body a{color:var(--teal);text-decoration:underline;text-underline-offset:2px;}
 .ob-blog-body img{
-  display:block;max-width:min(100%,22rem);width:100%;height:auto;
-  aspect-ratio:1 / 1;object-fit:cover;
-  margin:.65rem 0;border:1px solid var(--line);border-radius:.35rem;
-  background:rgba(255,255,255,.04);
+  display:block;
+  width:auto;
+  max-width:100%;
+  height:auto;
+  aspect-ratio:auto;
+  object-fit:contain;
+  margin:.65rem 0;
+  border:0;
+  border-radius:0;
+  background:transparent;
 }
 .ob-blog-form textarea{
   resize:vertical;min-height:8rem;
