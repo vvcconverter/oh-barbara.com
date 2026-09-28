@@ -6522,5 +6522,20 @@
     "slug": "болею",
     "name": "болею",
     "offtop": true
+  },
+  {
+    "slug": "телега1",
+    "name": "телега",
+    "offtop": true
+  },
+  {
+    "slug": "телеграм",
+    "name": "телеграм",
+    "offtop": true
+  },
+  {
+    "slug": "болею1",
+    "name": "болею",
+    "offtop": true
   }
 ]
