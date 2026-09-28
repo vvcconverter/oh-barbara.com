@@ -439,16 +439,11 @@
     var block = urls
       .map(function (u) {
         return (
-          "  <url>\n" +
-          "    <loc>" +
+          "<url><loc>" +
           u +
-          "</loc>\n" +
-          "    <lastmod>" +
+          "</loc><lastmod>" +
           new Date().toISOString().slice(0, 10) +
-          "</lastmod>\n" +
-          "    <changefreq>weekly</changefreq>\n" +
-          "    <priority>0.7</priority>\n" +
-          "  </url>\n"
+          "</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>\n"
         );
       })
       .join("");
