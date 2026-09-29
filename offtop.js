@@ -780,6 +780,159 @@
     sitemapSha = await putFile(token, "sitemap.xml", xml, sitemapSha, "blog: sitemap post");
   }
 
+  function removeSitemapLocs(xml, locs) {
+    var want = Object.create(null);
+    (locs || []).forEach(function (loc) {
+      if (loc) want[String(loc)] = true;
+    });
+    if (!Object.keys(want).length) return xml;
+    return String(xml || "").replace(/<url>[\s\S]*?<\/url>\s*/gi, function (block) {
+      for (var loc in want) {
+        if (Object.prototype.hasOwnProperty.call(want, loc) && block.indexOf("<loc>" + loc + "</loc>") !== -1) {
+          return "";
+        }
+      }
+      return block;
+    });
+  }
+
+  function postSitemapLocs(post) {
+    var ids = [];
+    if (!post) return ids;
+    var slug = String(post.slug || "").trim();
+    var fromTitle = postSitemapId(post.title || "");
+    if (slug) ids.push(slug);
+    if (fromTitle && fromTitle !== slug) ids.push(fromTitle);
+    var locs = [];
+    ids.forEach(function (id) {
+      locs.push("https://oh-barbara.com/offtop.html?id=" + id);
+      locs.push("https://oh-barbara.com/offtop.html?id=" + encodeURIComponent(id));
+    });
+    return locs;
+  }
+
+  function extractOfftopSlugsFromBody(body) {
+    var out = [];
+    var seen = Object.create(null);
+    var re = /offtop\.html\?id=([^)\s"'<>]+)/gi;
+    var m;
+    while ((m = re.exec(String(body || "")))) {
+      var raw = String(m[1] || "").trim();
+      if (!raw) continue;
+      var slug = raw;
+      try {
+        slug = decodeURIComponent(raw.replace(/\+/g, " "));
+      } catch (e) {}
+      var key = String(slug).toLowerCase();
+      if (seen[key]) continue;
+      seen[key] = true;
+      out.push(slug);
+    }
+    return out;
+  }
+
+  function postUsesTagSlug(post, slug) {
+    if (!post || !slug) return false;
+    var key = String(slug).toLowerCase();
+    if (Array.isArray(post.tags)) {
+      for (var i = 0; i < post.tags.length; i++) {
+        if (String(post.tags[i] || "").toLowerCase() === key) return true;
+      }
+    }
+    var bodySlugs = extractOfftopSlugsFromBody(post.body);
+    for (var j = 0; j < bodySlugs.length; j++) {
+      if (String(bodySlugs[j]).toLowerCase() === key) return true;
+    }
+    return false;
+  }
+
+  function collectPostTagSlugs(post) {
+    var seen = Object.create(null);
+    var out = [];
+    function add(slug) {
+      if (!slug) return;
+      var key = String(slug).toLowerCase();
+      if (seen[key]) return;
+      seen[key] = true;
+      out.push(String(slug));
+    }
+    if (post && Array.isArray(post.tags)) {
+      post.tags.forEach(add);
+    }
+    extractOfftopSlugsFromBody(post && post.body).forEach(add);
+    return out;
+  }
+
+  async function removePostSitemap(token, post) {
+    var locs = postSitemapLocs(post);
+    if (!locs.length) return;
+    const sm = await fetchFile(token, "sitemap.xml");
+    sitemapSha = sm.sha;
+    var xml = sm.text || "";
+    if (!xml) return;
+    var next = removeSitemapLocs(xml, locs);
+    if (next === xml) return;
+    sitemapSha = await putFile(token, "sitemap.xml", next, sitemapSha, "blog: sitemap delete");
+  }
+
+  async function removeUnusedOfftopTags(token, victim, remainingPosts) {
+    var candidates = collectPostTagSlugs(victim);
+    if (!candidates.length) return;
+    var toRemove = candidates.filter(function (slug) {
+      for (var i = 0; i < remainingPosts.length; i++) {
+        if (postUsesTagSlug(remainingPosts[i], slug)) return false;
+      }
+      return true;
+    });
+    if (!toRemove.length) return;
+
+    const tagsFile = await fetchFile(token, "data/tags.json");
+    tagsSha = tagsFile.sha;
+    var list = [];
+    try {
+      list = tagsFile.text ? JSON.parse(tagsFile.text) : [];
+    } catch (e) {
+      list = [];
+    }
+    if (!Array.isArray(list)) list = [];
+
+    var removeSet = Object.create(null);
+    toRemove.forEach(function (slug) {
+      removeSet[String(slug).toLowerCase()] = true;
+    });
+
+    var removed = [];
+    var next = list.filter(function (t) {
+      if (!t || !t.slug) return true;
+      if (!removeSet[String(t.slug).toLowerCase()]) return true;
+      if (t.offtop !== true) return true;
+      removed.push(t.slug);
+      return false;
+    });
+    if (!removed.length) return;
+
+    tagsSha = await putFile(
+      token,
+      "data/tags.json",
+      JSON.stringify(next, null, 2) + "\n",
+      tagsSha,
+      "blog: tags delete " + removed.join(", ")
+    );
+
+    var tagLocs = [];
+    removed.forEach(function (slug) {
+      tagLocs.push("https://oh-barbara.com/offtop.html?id=" + slug);
+      tagLocs.push("https://oh-barbara.com/offtop.html?id=" + encodeURIComponent(slug));
+    });
+    const sm = await fetchFile(token, "sitemap.xml");
+    sitemapSha = sm.sha;
+    var xml = sm.text || "";
+    if (!xml) return;
+    var xmlNext = removeSitemapLocs(xml, tagLocs);
+    if (xmlNext === xml) return;
+    sitemapSha = await putFile(token, "sitemap.xml", xmlNext, sitemapSha, "blog: sitemap tags delete");
+  }
+
   async function loadBlog() {
     try {
       const res = await fetch("data/blog.json?t=" + Date.now(), {
@@ -1189,6 +1342,10 @@
             return p && p.id !== delId;
           });
           remote.updated = new Date().toISOString();
+          if (victim) {
+            await removePostSitemap(token, victim);
+            await removeUnusedOfftopTags(token, victim, remote.posts);
+          }
           await commitBlog(token, remote, "blog: delete " + delId);
           blogData = remote;
           if (editingId === delId) {
