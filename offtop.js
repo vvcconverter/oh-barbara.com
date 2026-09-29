@@ -124,8 +124,38 @@
     return "Публикация";
   }
 
+  function videoHtml(url, title) {
+    return (
+      '<video class="ob-blog-video" src="' +
+      esc(url) +
+      '" title="' +
+      esc(title) +
+      '" controls playsinline preload="metadata"></video>'
+    );
+  }
+
   function mdToHtml(src) {
     var s = String(src || "");
+    s = s.replace(
+      /\[!!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)/g,
+      function (_, alt, vidInner, href) {
+        var vidUrl = String(vidInner || "").trim().split(/\s+/)[0];
+        return (
+          '<a href="' +
+          esc(String(href || "").trim()) +
+          '">' +
+          videoHtml(vidUrl, alt) +
+          "</a>"
+        );
+      }
+    );
+    s = s.replace(/!!\[([^\]]*)\]\(([^)]+)\)/g, function (_, alt, inner) {
+      var raw = String(inner || "").trim();
+      var m = raw.match(/^(\S+)(?:\s+"([^"]*)")?$/);
+      var url = m ? m[1] : raw;
+      var title = m && m[2] ? m[2] : alt;
+      return videoHtml(url, title);
+    });
     s = s.replace(
       /\[!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)/g,
       function (_, alt, imgInner, href) {
@@ -437,6 +467,24 @@
       }
     );
 
+    // [!![Alt](video)](offtop.html?id=old-slug) -> rebuild id from alt text
+    body = body.replace(
+      /\[!!\[([^\]]*)\]\(([^)]+)\)\]\(((?:https?:\/\/[^)\s]+\/)?offtop\.html\?id=[^)]+)\)/gi,
+      function (_, alt, vid) {
+        var cleanAlt = String(alt || "").trim();
+        if (!cleanAlt) return _;
+        return (
+          "[!![" +
+          cleanAlt +
+          "](" +
+          String(vid || "").trim() +
+          ")](" +
+          normalizeOfftopHref("offtop.html", cleanAlt) +
+          ")"
+        );
+      }
+    );
+
     return body;
   }
 
@@ -665,18 +713,24 @@
     var body = document.getElementById("ob-blog-body");
     var linkBtn = document.getElementById("ob-md-link");
     var imgBtn = document.getElementById("ob-md-img");
+    var videoBtn = document.getElementById("ob-md-video");
     var linkPanel = document.getElementById("ob-md-link-panel");
     var imgPanel = document.getElementById("ob-md-img-panel");
+    var videoPanel = document.getElementById("ob-md-video-panel");
     var linkOk = document.getElementById("ob-md-link-ok");
     var imgOk = document.getElementById("ob-md-img-ok");
+    var videoOk = document.getElementById("ob-md-video-ok");
 
     function showPanel(which) {
       var linkOn = which === "link";
       var imgOn = which === "img";
+      var videoOn = which === "video";
       if (linkPanel) linkPanel.hidden = !linkOn;
       if (imgPanel) imgPanel.hidden = !imgOn;
+      if (videoPanel) videoPanel.hidden = !videoOn;
       if (linkBtn) linkBtn.setAttribute("aria-expanded", linkOn ? "true" : "false");
       if (imgBtn) imgBtn.setAttribute("aria-expanded", imgOn ? "true" : "false");
+      if (videoBtn) videoBtn.setAttribute("aria-expanded", videoOn ? "true" : "false");
     }
 
     if (linkBtn) {
@@ -687,6 +741,11 @@
     if (imgBtn) {
       imgBtn.addEventListener("click", function () {
         showPanel(imgPanel && imgPanel.hidden ? "img" : "");
+      });
+    }
+    if (videoBtn) {
+      videoBtn.addEventListener("click", function () {
+        showPanel(videoPanel && videoPanel.hidden ? "video" : "");
       });
     }
 
@@ -746,6 +805,28 @@
         insertAtCursor(body, md);
         if (document.getElementById("ob-md-img-name")) document.getElementById("ob-md-img-name").value = "";
         if (document.getElementById("ob-md-img-url")) document.getElementById("ob-md-img-url").value = "";
+        showPanel("");
+      });
+    }
+
+    if (videoOk) {
+      videoOk.addEventListener("click", function () {
+        var name = ((document.getElementById("ob-md-video-name") || {}).value || "").trim();
+        var url = ((document.getElementById("ob-md-video-url") || {}).value || "").trim();
+        if (!name || !url) return;
+        var tag = queuePendingTag(name);
+        var safe = name.replace(/[\[\]\"]/g, "");
+        var md =
+          "[!![" +
+          safe +
+          "](" +
+          url +
+          ")](offtop.html?id=" +
+          encodeURIComponent(tag.slug) +
+          ")";
+        insertAtCursor(body, md);
+        if (document.getElementById("ob-md-video-name")) document.getElementById("ob-md-video-name").value = "";
+        if (document.getElementById("ob-md-video-url")) document.getElementById("ob-md-video-url").value = "";
         showPanel("");
       });
     }

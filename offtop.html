@@ -96,6 +96,9 @@
         <button type="button" class="ob-blog-md-ico" id="ob-md-img" title="Добавить картинку" aria-label="Добавить картинку" aria-expanded="false" aria-controls="ob-md-img-panel">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M19 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 12H5l3.5-4.5 2.5 3 3.5-4.5L19 17zM8.5 10A1.5 1.5 0 1 0 8.5 7a1.5 1.5 0 0 0 0 3z"/></svg>
         </button>
+        <button type="button" class="ob-blog-md-ico" id="ob-md-video" title="Добавить видео" aria-label="Добавить видео" aria-expanded="false" aria-controls="ob-md-video-panel">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M17 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5l4 4v-11l-4 4z"/></svg>
+        </button>
       </div>
       <div class="ob-blog-md-panel" id="ob-md-link-panel" hidden>
         <label for="ob-md-link-name">Название</label>
@@ -113,6 +116,13 @@
         <input type="text" id="ob-md-img-url" autocomplete="off" placeholder="https://" />
         <button type="button" class="btn btn-ghost" id="ob-md-img-ok">Вставить картинку</button>
       </div>
+      <div class="ob-blog-md-panel" id="ob-md-video-panel" hidden>
+        <label for="ob-md-video-name">Название</label>
+        <input type="text" id="ob-md-video-name" autocomplete="off" />
+        <label for="ob-md-video-url">Ссылка на видео</label>
+        <input type="text" id="ob-md-video-url" autocomplete="off" placeholder="https://" />
+        <button type="button" class="btn btn-ghost" id="ob-md-video-ok">Вставить видео</button>
+      </div>
       <textarea id="ob-blog-body" rows="8" maxlength="20000" required></textarea>
       <p class="ob-blog-err" id="ob-blog-save-err" hidden></p>
       <p class="ob-blog-ok" id="ob-blog-save-ok" hidden></p>
@@ -123,6 +133,6 @@
   </div>
 </div>
 
-<script src="offtop.js?v=27" defer></script>
+<script src="offtop.js?v=28" defer></script>
 </body>
 </html>
