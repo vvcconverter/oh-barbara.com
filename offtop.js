@@ -888,6 +888,49 @@
     });
   })();
 
+  (function bodyGrow() {
+    var btn = document.getElementById("ob-blog-body-grow");
+    var body = document.getElementById("ob-blog-body");
+    if (!btn || !body) return;
+    var dragging = false;
+    var moved = false;
+    var startY = 0;
+    var startH = 0;
+
+    function setH(h) {
+      body.style.height = Math.max(128, h) + "px";
+    }
+
+    btn.addEventListener("pointerdown", function (e) {
+      dragging = true;
+      moved = false;
+      startY = e.clientY;
+      startH = body.offsetHeight || 128;
+      try {
+        btn.setPointerCapture(e.pointerId);
+      } catch (err) {}
+      e.preventDefault();
+    });
+    btn.addEventListener("pointermove", function (e) {
+      if (!dragging) return;
+      var dy = e.clientY - startY;
+      if (Math.abs(dy) > 2) moved = true;
+      setH(startH + dy);
+    });
+    function endDrag() {
+      dragging = false;
+    }
+    btn.addEventListener("pointerup", endDrag);
+    btn.addEventListener("pointercancel", endDrag);
+    btn.addEventListener("click", function (e) {
+      if (moved) {
+        e.preventDefault();
+        return;
+      }
+      setH((body.offsetHeight || 128) + 96);
+    });
+  })();
+
   (function typeSeg() {
     var wrap = document.querySelector(".ob-blog-types");
     var input = document.getElementById("ob-blog-type");
