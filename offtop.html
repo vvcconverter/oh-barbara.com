@@ -114,14 +114,22 @@
         <input type="text" id="ob-md-img-name" autocomplete="off" />
         <label for="ob-md-img-url">Ссылка на картинку</label>
         <input type="text" id="ob-md-img-url" autocomplete="off" placeholder="https://" />
+        <input type="file" id="ob-md-img-file" accept="image/*" hidden />
+        <button type="button" class="btn btn-ghost" id="ob-md-img-upload" title="Загрузить картинку до 40 МБ" aria-label="Загрузить картинку до 40 МБ">Загрузить картинку до 40 МБ</button>
         <button type="button" class="btn btn-ghost" id="ob-md-img-ok">Вставить картинку</button>
+        <p class="ob-blog-err" id="ob-md-img-upload-err" hidden></p>
+        <p class="ob-blog-ok" id="ob-md-img-upload-ok" hidden></p>
       </div>
       <div class="ob-blog-md-panel" id="ob-md-video-panel" hidden>
         <label for="ob-md-video-name">Название</label>
         <input type="text" id="ob-md-video-name" autocomplete="off" />
         <label for="ob-md-video-url">Ссылка на видео</label>
         <input type="text" id="ob-md-video-url" autocomplete="off" placeholder="https://" />
+        <input type="file" id="ob-md-video-file" accept="video/*" hidden />
+        <button type="button" class="btn btn-ghost" id="ob-md-video-upload" title="Загрузить видео до 40 МБ" aria-label="Загрузить видео до 40 МБ">Загрузить видео до 40 МБ</button>
         <button type="button" class="btn btn-ghost" id="ob-md-video-ok">Вставить видео</button>
+        <p class="ob-blog-err" id="ob-md-video-upload-err" hidden></p>
+        <p class="ob-blog-ok" id="ob-md-video-upload-ok" hidden></p>
       </div>
       <textarea id="ob-blog-body" rows="8" maxlength="20000" required></textarea>
       <p class="ob-blog-err" id="ob-blog-save-err" hidden></p>
@@ -133,6 +141,6 @@
   </div>
 </div>
 
-<script src="offtop.js?v=28" defer></script>
+<script src="offtop.js?v=30" defer></script>
 </body>
 </html>

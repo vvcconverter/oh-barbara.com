@@ -4,6 +4,14 @@
     repo: "oh-barbara.com",
     branch: "main",
   };
+  /* Медиа-репозиторий. publicBase — после настройки Gcore замените на URL CDN. */
+  const MEDIA = {
+    owner: "vvcconverter",
+    repo: "media",
+    branch: "main",
+    publicBase: "https://raw.githubusercontent.com/vvcconverter/media/main/",
+    maxBytes: 40 * 1024 * 1024,
+  };
   const PASS_HASH =
     "acaff93184f85d24e4c78d891dd060a6f2e072604008d0a2f8ce966ee1417d1a";
 
@@ -378,6 +386,192 @@
     }
     const json = await res.json();
     return (json.content && json.content.sha) || sha;
+  }
+
+  function mediaContentUrl(path) {
+    return (
+      "https://api.github.com/repos/" +
+      MEDIA.owner +
+      "/" +
+      MEDIA.repo +
+      "/contents/" +
+      path
+    );
+  }
+
+  function bytesToBase64(buffer) {
+    var bytes = new Uint8Array(buffer);
+    var chunk = 0x8000;
+    var binary = "";
+    for (var i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunk, bytes.length)));
+    }
+    return btoa(binary);
+  }
+
+  function safeMediaName(name) {
+    return String(name || "file")
+      .replace(/[^\w.\-а-яА-ЯёЁ]+/gi, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || "file";
+  }
+
+  function publicMediaUrl(path) {
+    var base = String(MEDIA.publicBase || "").replace(/\/?$/, "/");
+    return (
+      base +
+      String(path || "")
+        .split("/")
+        .map(function (p) {
+          return encodeURIComponent(p);
+        })
+        .join("/")
+    );
+  }
+
+  function mediaPathFromUrl(url) {
+    var raw = String(url || "").trim().replace(/[.,;]+$/, "");
+    if (!raw) return null;
+    try {
+      var u = new URL(raw, location.href);
+      var host = u.hostname.toLowerCase();
+      var parts = u.pathname.split("/").filter(Boolean);
+      if (host === "raw.githubusercontent.com" || host === "cdn.jsdelivr.net") {
+        // raw: /owner/repo/branch/images/file
+        // jsdelivr gh: /gh/owner/repo@branch/images/file
+        var start = 0;
+        if (host === "cdn.jsdelivr.net" && parts[0] === "gh") {
+          if (parts[1] !== MEDIA.owner) return null;
+          var repoBranch = String(parts[2] || "").split("@");
+          if (repoBranch[0] !== MEDIA.repo) return null;
+          start = 3;
+        } else {
+          if (parts[0] !== MEDIA.owner || parts[1] !== MEDIA.repo) return null;
+          start = 3; // skip owner/repo/branch
+        }
+        var path = parts.slice(start).map(decodeURIComponent).join("/");
+        if (/^(images|videos)\//.test(path)) return path;
+        return null;
+      }
+      var base = String(MEDIA.publicBase || "").replace(/\/?$/, "/");
+      if (base && raw.indexOf(base) === 0) {
+        var rest = decodeURIComponent(raw.slice(base.length).split(/[?#]/)[0]);
+        if (/^(images|videos)\//.test(rest)) return rest;
+      }
+      // github.com/owner/media/blob/main/images/...
+      if (host === "github.com" && parts[0] === MEDIA.owner && parts[1] === MEDIA.repo && parts[2] === "blob") {
+        var p2 = parts.slice(4).map(decodeURIComponent).join("/");
+        if (/^(images|videos)\//.test(p2)) return p2;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function extractMediaPathsFromBody(text) {
+    var out = [];
+    var seen = Object.create(null);
+    var re = /https?:\/\/[^\s)"'\]]+/gi;
+    var m;
+    var s = String(text || "");
+    while ((m = re.exec(s))) {
+      var path = mediaPathFromUrl(m[0]);
+      if (path && !seen[path]) {
+        seen[path] = 1;
+        out.push(path);
+      }
+    }
+    return out;
+  }
+
+  async function deleteMediaFile(token, path) {
+    if (!token || !path) return;
+    var url = mediaContentUrl(path);
+    var getRes = await fetch(url + "?ref=" + encodeURIComponent(MEDIA.branch), {
+      headers: apiHeaders(token),
+    });
+    if (getRes.status === 404) return;
+    if (!getRes.ok) {
+      var gt = await getRes.text();
+      throw new Error("GitHub media GET " + path + " " + getRes.status + ": " + gt.slice(0, 160));
+    }
+    var json = await getRes.json();
+    var delRes = await fetch(url, {
+      method: "DELETE",
+      headers: apiHeaders(token),
+      body: JSON.stringify({
+        message: "media: delete " + path,
+        sha: json.sha,
+        branch: MEDIA.branch,
+      }),
+    });
+    if (delRes.status === 404) return;
+    if (!delRes.ok) {
+      var dt = await delRes.text();
+      throw new Error("GitHub media DELETE " + path + " " + delRes.status + ": " + dt.slice(0, 160));
+    }
+  }
+
+  async function deleteMediaFromBody(token, body) {
+    var paths = extractMediaPathsFromBody(body);
+    var errors = [];
+    for (var i = 0; i < paths.length; i++) {
+      try {
+        await deleteMediaFile(token, paths[i]);
+      } catch (e) {
+        errors.push((e && e.message) || String(e));
+      }
+    }
+    if (errors.length) throw new Error(errors[0]);
+  }
+
+  async function uploadMediaFile(token, kind, file) {
+    if (!token) throw new Error("Сначала войдите в админ (нужен GitHub token)");
+    if (!file) throw new Error("Файл не выбран");
+    if (file.size > MEDIA.maxBytes) {
+      throw new Error(
+        "Файл слишком большой для API (" +
+          Math.round(file.size / 1024 / 1024) +
+          " МБ). Лимит сейчас " +
+          Math.round(MEDIA.maxBytes / 1024 / 1024) +
+          " МБ"
+      );
+    }
+    var ext = (file.name.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (kind === "image" && !ext) ext = "jpg";
+    if (kind === "video" && !ext) ext = "mp4";
+    var stamp = Date.now().toString(36);
+    var baseName = safeMediaName(file.name.replace(/\.[^.]+$/, ""));
+    var folder = kind === "video" ? "videos" : "images";
+    var path = folder + "/" + stamp + "-" + baseName + (ext ? "." + ext : "");
+    var buf = await file.arrayBuffer();
+    var url = mediaContentUrl(path);
+    var sha = null;
+    var getRes = await fetch(url + "?ref=" + encodeURIComponent(MEDIA.branch), {
+      headers: apiHeaders(token),
+    });
+    if (getRes.ok) {
+      var got = await getRes.json();
+      sha = got.sha || null;
+    } else if (getRes.status !== 404) {
+      var gt = await getRes.text();
+      throw new Error("GitHub media GET " + getRes.status + ": " + gt.slice(0, 160));
+    }
+    var payload = {
+      message: "media: add " + path,
+      content: bytesToBase64(buf),
+      branch: MEDIA.branch,
+    };
+    if (sha) payload.sha = sha;
+    var putRes = await fetch(url, {
+      method: "PUT",
+      headers: apiHeaders(token),
+      body: JSON.stringify(payload),
+    });
+    if (!putRes.ok) {
+      var pt = await putRes.text();
+      throw new Error("GitHub media PUT " + putRes.status + ": " + pt.slice(0, 220));
+    }
+    return publicMediaUrl(path);
   }
 
   function markSlug(slug) {
@@ -830,6 +1024,55 @@
         showPanel("");
       });
     }
+
+    function wireUpload(kind) {
+      var fileInput = document.getElementById(kind === "video" ? "ob-md-video-file" : "ob-md-img-file");
+      var uploadBtn = document.getElementById(kind === "video" ? "ob-md-video-upload" : "ob-md-img-upload");
+      var urlInput = document.getElementById(kind === "video" ? "ob-md-video-url" : "ob-md-img-url");
+      var nameInput = document.getElementById(kind === "video" ? "ob-md-video-name" : "ob-md-img-name");
+      var errEl = document.getElementById(kind === "video" ? "ob-md-video-upload-err" : "ob-md-img-upload-err");
+      var okEl = document.getElementById(kind === "video" ? "ob-md-video-upload-ok" : "ob-md-img-upload-ok");
+      if (!fileInput || !uploadBtn) return;
+
+      function setMsg(ok, text) {
+        if (errEl) {
+          errEl.hidden = !!ok || !text;
+          errEl.textContent = ok ? "" : text || "";
+        }
+        if (okEl) {
+          okEl.hidden = !ok || !text;
+          okEl.textContent = ok ? text || "" : "";
+        }
+      }
+
+      uploadBtn.addEventListener("click", function () {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", async function () {
+        var file = fileInput.files && fileInput.files[0];
+        fileInput.value = "";
+        if (!file) return;
+        var token = sessionStorage.getItem("ob_blog_gh") || "";
+        setMsg(false, "");
+        setMsg(true, "Загрузка в GitHub media…");
+        uploadBtn.disabled = true;
+        try {
+          var url = await uploadMediaFile(token, kind === "video" ? "video" : "image", file);
+          if (urlInput) urlInput.value = url;
+          if (nameInput && !String(nameInput.value || "").trim()) {
+            nameInput.value = String(file.name || "").replace(/\.[^.]+$/, "");
+          }
+          setMsg(true, "Готово. Ссылка подставлена — нажмите «Вставить " + (kind === "video" ? "видео" : "картинку") + "»");
+        } catch (e) {
+          setMsg(false, (e && e.message) || "Ошибка загрузки");
+        }
+        uploadBtn.disabled = false;
+      });
+    }
+
+    wireUpload("image");
+    wireUpload("video");
   })();
 
   if (loginForm) {
@@ -888,7 +1131,18 @@
         try {
           delBtn.disabled = true;
           var remote = await fetchRemoteBlog(token);
-          remote.posts = (Array.isArray(remote.posts) ? remote.posts : []).filter(function (p) {
+          var list = Array.isArray(remote.posts) ? remote.posts : [];
+          var victim = null;
+          for (var i = 0; i < list.length; i++) {
+            if (list[i] && list[i].id === delId) {
+              victim = list[i];
+              break;
+            }
+          }
+          if (victim && victim.body) {
+            await deleteMediaFromBody(token, victim.body);
+          }
+          remote.posts = list.filter(function (p) {
             return p && p.id !== delId;
           });
           remote.updated = new Date().toISOString();
