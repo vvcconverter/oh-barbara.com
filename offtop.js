@@ -41,6 +41,7 @@
   var deletedIds = Object.create(null);
   var blogSyncChain = Promise.resolve();
   var TOMB_KEY = "ob_blog_deleted_v1";
+  var PENDING_KEY = "ob_blog_pending_v1";
 
   function enqueueBlogSync(task) {
     var run = function () {
@@ -121,6 +122,63 @@
     data.posts = data.posts.filter(function (p) {
       return p && p.id && !isDeleted(p.id);
     });
+    return data;
+  }
+
+  function readPendingPosts() {
+    try {
+      var raw = localStorage.getItem(PENDING_KEY);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writePendingPosts(list) {
+    try {
+      localStorage.setItem(PENDING_KEY, JSON.stringify(list || []));
+    } catch (e) {}
+  }
+
+  function savePendingPost(post) {
+    if (!post || !post.id) return;
+    var clean = clonePost(post);
+    if (!clean) return;
+    clean.pending = true;
+    var list = readPendingPosts().filter(function (p) {
+      return p && p.id !== clean.id;
+    });
+    list.unshift(clean);
+    writePendingPosts(list);
+  }
+
+  function dropPendingPost(id) {
+    if (!id) return;
+    writePendingPosts(
+      readPendingPosts().filter(function (p) {
+        return p && p.id !== id;
+      })
+    );
+  }
+
+  function mergePendingPosts(data) {
+    if (!data || !Array.isArray(data.posts)) return data;
+    var have = Object.create(null);
+    data.posts.forEach(function (p) {
+      if (p && p.id) have[p.id] = true;
+    });
+    var keep = [];
+    readPendingPosts().forEach(function (p) {
+      if (!p || !p.id) return;
+      if (isDeleted(p.id)) return;
+      if (have[p.id]) return;
+      keep.push(p);
+      data.posts.unshift(Object.assign(clonePost(p) || {}, { pending: true }));
+      have[p.id] = true;
+    });
+    writePendingPosts(keep);
     return data;
   }
 
@@ -1528,6 +1586,8 @@
       purgeGoneTombstones(blogData.posts.slice());
       hydrateDeletedIds();
       applyHiddenDeletes(blogData);
+      mergePendingPosts(blogData);
+      applyHiddenDeletes(blogData);
       render();
     } catch (e) {
       if (empty) {
@@ -2098,7 +2158,7 @@
             if (circleAbort) return;
             var type = rec.mimeType || mime || "video/webm";
             circleBlob = new Blob(circleChunks, { type: type });
-            if (circleInsert) circleInsert.hidden = !circleBlob.size;
+            if (circleInsert) circleInsert.hidden = true;
             if (circleStart) circleStart.hidden = false;
             if (circleStop) circleStop.hidden = true;
             stopCircleTimer();
@@ -2115,11 +2175,15 @@
                 circlePreview.srcObject = null;
                 circlePreview.src = URL.createObjectURL(circleBlob);
                 circlePreview.muted = false;
-                circlePreview.controls = true;
+                circlePreview.controls = false;
                 circlePreview.play().catch(function () {});
               } catch (e) {}
             }
-            setTgMsg(true, "Готово — нажмите «Вставить кружок»");
+            if (circleBlob && circleBlob.size) {
+              insertRecordedCircle(circleBlob);
+            } else {
+              setTgMsg(false, "Пустая запись");
+            }
           };
           circleRecorder.start(250);
           circleStartedAt = Date.now();
@@ -2159,46 +2223,53 @@
       });
     }
 
-    if (circleInsert) {
-      circleInsert.addEventListener("click", async function () {
-        if (!circleBlob || !circleBlob.size) {
-          setTgMsg(false, "Сначала запишите кружок");
-          return;
-        }
-        var token = sessionStorage.getItem("ob_blog_gh") || "";
-        var ext = /mp4/i.test(circleBlob.type) ? "mp4" : "webm";
-        var file = new File([circleBlob], "circle-" + Date.now() + "." + ext, {
-          type: circleBlob.type || "video/" + ext,
-        });
-        circleInsert.disabled = true;
-        setTgMsg(true, "Загрузка кружка…");
-        try {
-          var url = await uploadMediaFile(token, "video", file);
-          var name = "кружок";
-          var tag = queuePendingTag(name);
-          var md =
-            "[!!![" +
-            name +
-            "](" +
-            url +
-            ")](offtop.html?id=" +
-            encodeURIComponent(tag.slug) +
-            ")";
-          insertAtCursor(body, md);
-          circleBlob = null;
-          circleInsert.hidden = true;
-          if (circlePreview) {
-            circlePreview.removeAttribute("src");
-            circlePreview.controls = false;
-            circlePreview.load();
-          }
-          setTgMsg(true, "Кружок вставлен");
-          showPanel("");
-        } catch (e) {
-          setTgMsg(false, (e && e.message) || "Ошибка загрузки");
-        }
-        circleInsert.disabled = false;
+    async function insertRecordedCircle(blob) {
+      if (!blob || !blob.size) {
+        setTgMsg(false, "Пустая запись");
+        return;
+      }
+      var token = sessionStorage.getItem("ob_blog_gh") || "";
+      var ext = /mp4/i.test(blob.type) ? "mp4" : "webm";
+      var file = new File([blob], "circle-" + Date.now() + "." + ext, {
+        type: blob.type || "video/" + ext,
       });
+      if (circleInsert) circleInsert.disabled = true;
+      if (circleStart) circleStart.disabled = true;
+      setTgMsg(true, "Загрузка кружка…");
+      try {
+        var url = await uploadMediaFile(token, "video", file);
+        var name = "кружок";
+        var tag = rememberPendingTag(name);
+        var md =
+          "[!!![" +
+          name +
+          "](" +
+          url +
+          ")](offtop.html?id=" +
+          encodeURIComponent(tag.slug) +
+          ")";
+        insertAtCursor(body, md);
+        circleBlob = null;
+        if (circleInsert) circleInsert.hidden = true;
+        if (circlePreview) {
+          try {
+            if (circlePreview.src && circlePreview.src.indexOf("blob:") === 0) {
+              URL.revokeObjectURL(circlePreview.src);
+            }
+          } catch (e) {}
+          circlePreview.removeAttribute("src");
+          circlePreview.controls = false;
+          try {
+            circlePreview.load();
+          } catch (e) {}
+        }
+        setTgMsg(true, "Кружок вставлен");
+        showPanel("");
+      } catch (e) {
+        setTgMsg(false, (e && e.message) || "Ошибка загрузки");
+      }
+      if (circleInsert) circleInsert.disabled = false;
+      if (circleStart) circleStart.disabled = false;
     }
 
     function wireUpload(kind) {
@@ -2318,6 +2389,7 @@
 
       syncLocks["del:" + delId] = true;
       markDeleted(delId);
+      dropPendingPost(delId);
       removeLocalPost(delId);
       if (editingId === delId) {
         clearEditorFields();
@@ -2437,6 +2509,7 @@
         if (tagSlugs.length) {
           localFound.tags = (localFound.tags || []).concat(tagSlugs);
         }
+        savePendingPost(localFound);
         pendingTags = [];
         clearEditorFields();
         closeModal();
@@ -2451,6 +2524,7 @@
         enqueueBlogSync(async function () {
           try {
             if (isDeleted(editId)) {
+              dropPendingPost(editId);
               removeLocalPost(editId);
               render();
               return;
@@ -2482,17 +2556,32 @@
               "blog: edit " + title.slice(0, 64)
             );
             if (isDeleted(editId)) {
+              dropPendingPost(editId);
               removeLocalPost(editId);
               render();
               return;
             }
+            savePendingPost({
+              id: editId,
+              title: title,
+              type: type,
+              body: body,
+              slug: slug,
+              created: (editBackup && editBackup.created) || now,
+              updated: now,
+              author: (editBackup && editBackup.author) || "oh_barbara",
+              tags: (editBackup && editBackup.tags) || tagSlugs.slice(),
+              pending: true,
+            });
             blogData = remote;
             ensureBlogPosts();
             applyHiddenDeletes(blogData);
+            mergePendingPosts(blogData);
             var live = findLocalPost(editId);
             if (live) delete live.pending;
             render();
           } catch (err) {
+            dropPendingPost(editId);
             if (isDeleted(editId)) {
               removeLocalPost(editId);
               render();
@@ -2530,6 +2619,7 @@
         pending: true,
       };
       ensureBlogPosts().unshift(post);
+      savePendingPost(post);
       pendingTags = [];
       clearEditorFields();
       closeModal();
@@ -2544,6 +2634,7 @@
       enqueueBlogSync(async function () {
         try {
           if (isDeleted(postId)) {
+            dropPendingPost(postId);
             removeLocalPost(postId);
             render();
             return;
@@ -2552,6 +2643,7 @@
           await commitPendingMeta(token);
           await commitPostSitemap(token, title);
           if (isDeleted(postId)) {
+            dropPendingPost(postId);
             removeLocalPost(postId);
             render();
             return;
@@ -2568,15 +2660,19 @@
             "blog: " + title.slice(0, 72)
           );
           if (isDeleted(postId)) {
+            dropPendingPost(postId);
             removeLocalPost(postId);
             render();
             return;
           }
+          savePendingPost(Object.assign(stripPending(post) || {}, { pending: true }));
           blogData = remote;
           ensureBlogPosts();
           applyHiddenDeletes(blogData);
+          mergePendingPosts(blogData);
           render();
         } catch (err) {
+          dropPendingPost(postId);
           removeLocalPost(postId);
           render();
           window.alert(err.message || String(err));
