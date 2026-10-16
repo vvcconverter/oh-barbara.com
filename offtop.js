@@ -142,17 +142,128 @@
     );
   }
 
+  function circleHtml(url, title) {
+    return (
+      '<video class="ob-blog-circle" src="' +
+      esc(url) +
+      '" title="' +
+      esc(title) +
+      '" controls playsinline preload="metadata"></video>'
+    );
+  }
+
+  function parseTelegramPost(raw) {
+    var s = String(raw || "").trim();
+    if (!s) return "";
+    var fromAttr = s.match(/data-telegram-post\s*=\s*["']([^"']+)["']/i);
+    if (fromAttr) s = fromAttr[1];
+    var fromUrl = s.match(/(?:https?:\/\/)?(?:t\.me|telegram\.me)\/([a-zA-Z0-9_]+)\/(\d+)/i);
+    if (fromUrl) return fromUrl[1] + "/" + fromUrl[2];
+    var compact = s.match(/^@?([a-zA-Z0-9_]+)\/(\d+)\s*$/);
+    if (compact) return compact[1] + "/" + compact[2];
+    return "";
+  }
+
+  function tgPostHtml(post) {
+    return (
+      '<div class="ob-tg-post" data-telegram-post="' + esc(post) + '"></div>'
+    );
+  }
+
+  var tgResizeBound = false;
+  function ensureTgResizeListener() {
+    if (tgResizeBound) return;
+    tgResizeBound = true;
+    window.addEventListener("message", function (event) {
+      if (!event || event.origin.indexOf("telegram.org") < 0 && event.origin.indexOf("t.me") < 0) {
+        return;
+      }
+      var data = event.data;
+      try {
+        if (typeof data === "string") data = JSON.parse(data);
+      } catch (e) {
+        return;
+      }
+      if (!data || data.event !== "resize" || !data.height) return;
+      var frames = document.querySelectorAll(".ob-tg-post iframe");
+      for (var i = 0; i < frames.length; i++) {
+        if (frames[i].contentWindow === event.source) {
+          frames[i].style.height = Math.max(120, parseInt(data.height, 10) || 0) + "px";
+          break;
+        }
+      }
+    });
+  }
+
+  function mountTelegramWidgets(root) {
+    ensureTgResizeListener();
+    var scope = root || document;
+    var nodes = scope.querySelectorAll
+      ? scope.querySelectorAll(".ob-tg-post:not([data-tg-mounted])")
+      : [];
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var post = el.getAttribute("data-telegram-post") || "";
+      if (!post) continue;
+      el.setAttribute("data-tg-mounted", "1");
+      el.innerHTML = "";
+      var iframe = document.createElement("iframe");
+      iframe.id = "telegram-post-" + post.replace(/[^\w]+/g, "-");
+      iframe.src = "https://t.me/" + post + "?embed=1&mode=tme&dark=1";
+      iframe.width = "100%";
+      iframe.setAttribute("frameborder", "0");
+      iframe.setAttribute("scrolling", "no");
+      iframe.setAttribute("allowfullscreen", "true");
+      iframe.style.cssText =
+        "overflow:hidden;border:none;min-width:280px;width:100%;height:380px;background:transparent;";
+      el.appendChild(iframe);
+    }
+  }
+
+  function mediaOrTgHtml(url, title, asCircle) {
+    var post = parseTelegramPost(url);
+    if (post) return tgPostHtml(post);
+    return asCircle ? circleHtml(url, title) : videoHtml(url, title);
+  }
+
   function mdToHtml(src) {
     var s = String(src || "");
+    s = s.replace(/\{\{tg:([a-zA-Z0-9_]+\/\d+)\}\}/g, function (_, post) {
+      return tgPostHtml(post);
+    });
     s = s.replace(
-      /\[!!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)/g,
+      /\[!!!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)/g,
       function (_, alt, vidInner, href) {
         var vidUrl = String(vidInner || "").trim().split(/\s+/)[0];
+        var inner = mediaOrTgHtml(vidUrl, alt, true);
+        if (inner.indexOf("ob-tg-post") >= 0) return inner;
         return (
           '<a href="' +
           esc(String(href || "").trim()) +
           '">' +
-          videoHtml(vidUrl, alt) +
+          inner +
+          "</a>"
+        );
+      }
+    );
+    s = s.replace(/!!!\[([^\]]*)\]\(([^)]+)\)/g, function (_, alt, inner) {
+      var raw = String(inner || "").trim();
+      var m = raw.match(/^(\S+)(?:\s+"([^"]*)")?$/);
+      var url = m ? m[1] : raw;
+      var title = m && m[2] ? m[2] : alt;
+      return mediaOrTgHtml(url, title, true);
+    });
+    s = s.replace(
+      /\[!!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)/g,
+      function (_, alt, vidInner, href) {
+        var vidUrl = String(vidInner || "").trim().split(/\s+/)[0];
+        var inner = mediaOrTgHtml(vidUrl, alt, false);
+        if (inner.indexOf("ob-tg-post") >= 0) return inner;
+        return (
+          '<a href="' +
+          esc(String(href || "").trim()) +
+          '">' +
+          inner +
           "</a>"
         );
       }
@@ -162,7 +273,7 @@
       var m = raw.match(/^(\S+)(?:\s+"([^"]*)")?$/);
       var url = m ? m[1] : raw;
       var title = m && m[2] ? m[2] : alt;
-      return videoHtml(url, title);
+      return mediaOrTgHtml(url, title, false);
     });
     s = s.replace(
       /\[!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)/g,
@@ -297,6 +408,7 @@
       feed.appendChild(art);
     });
     document.body.classList.add("is-feed-ready");
+    mountTelegramWidgets(feed);
     try {
       var raw = new URLSearchParams(location.search).get("id") || "";
       var q = raw;
@@ -661,6 +773,24 @@
       }
     );
 
+    // [!!![Alt](circle)](offtop.html?id=old-slug) -> rebuild id from alt text
+    body = body.replace(
+      /\[!!!\[([^\]]*)\]\(([^)]+)\)\]\(((?:https?:\/\/[^)\s]+\/)?offtop\.html\?id=[^)]+)\)/gi,
+      function (_, alt, vid) {
+        var cleanAlt = String(alt || "").trim();
+        if (!cleanAlt) return _;
+        return (
+          "[!!![" +
+          cleanAlt +
+          "](" +
+          String(vid || "").trim() +
+          ")](" +
+          normalizeOfftopHref("offtop.html", cleanAlt) +
+          ")"
+        );
+      }
+    );
+
     // [!![Alt](video)](offtop.html?id=old-slug) -> rebuild id from alt text
     body = body.replace(
       /\[!!\[([^\]]*)\]\(([^)]+)\)\]\(((?:https?:\/\/[^)\s]+\/)?offtop\.html\?id=[^)]+)\)/gi,
@@ -1008,6 +1138,9 @@
     if (!modal) return;
     modal.hidden = true;
     document.body.style.overflow = "";
+    try {
+      if (typeof window.__obStopCircleRec === "function") window.__obStopCircleRec();
+    } catch (e) {}
     clearEditorFields();
     clearAdminUrl();
   }
@@ -1104,23 +1237,108 @@
     var linkBtn = document.getElementById("ob-md-link");
     var imgBtn = document.getElementById("ob-md-img");
     var videoBtn = document.getElementById("ob-md-video");
+    var tgBtn = document.getElementById("ob-md-tg");
     var linkPanel = document.getElementById("ob-md-link-panel");
     var imgPanel = document.getElementById("ob-md-img-panel");
     var videoPanel = document.getElementById("ob-md-video-panel");
+    var tgPanel = document.getElementById("ob-md-tg-panel");
     var linkOk = document.getElementById("ob-md-link-ok");
     var imgOk = document.getElementById("ob-md-img-ok");
     var videoOk = document.getElementById("ob-md-video-ok");
+    var tgOk = document.getElementById("ob-md-tg-ok");
+    var tgErr = document.getElementById("ob-md-tg-err");
+    var tgOkMsg = document.getElementById("ob-md-tg-ok-msg");
+    var circlePreview = document.getElementById("ob-md-circle-preview");
+    var circleStart = document.getElementById("ob-md-circle-start");
+    var circleStop = document.getElementById("ob-md-circle-stop");
+    var circleInsert = document.getElementById("ob-md-circle-ok");
+    var circleTimer = document.getElementById("ob-md-circle-timer");
+    var circleStream = null;
+    var circleRecorder = null;
+    var circleChunks = [];
+    var circleBlob = null;
+    var circleTimerId = null;
+    var circleStartedAt = 0;
+    var circleAbort = false;
+
+    function setTgMsg(ok, text) {
+      if (tgErr) {
+        tgErr.hidden = !!ok || !text;
+        tgErr.textContent = ok ? "" : text || "";
+      }
+      if (tgOkMsg) {
+        tgOkMsg.hidden = !ok || !text;
+        tgOkMsg.textContent = ok ? text || "" : "";
+      }
+    }
+
+    function fmtCircleTime(ms) {
+      var sec = Math.floor(ms / 1000);
+      var m = Math.floor(sec / 60);
+      var s = sec % 60;
+      return m + ":" + (s < 10 ? "0" : "") + s;
+    }
+
+    function stopCircleTimer() {
+      if (circleTimerId) {
+        clearInterval(circleTimerId);
+        circleTimerId = null;
+      }
+    }
+
+    function stopCircleStream() {
+      circleAbort = true;
+      stopCircleTimer();
+      if (circleRecorder && circleRecorder.state !== "inactive") {
+        try {
+          circleRecorder.stop();
+        } catch (e) {}
+      }
+      circleRecorder = null;
+      if (circleStream) {
+        circleStream.getTracks().forEach(function (t) {
+          try {
+            t.stop();
+          } catch (e) {}
+        });
+        circleStream = null;
+      }
+      circleBlob = null;
+      if (circleInsert) circleInsert.hidden = true;
+      if (circlePreview) {
+        try {
+          circlePreview.srcObject = null;
+        } catch (e) {}
+        try {
+          if (circlePreview.src && circlePreview.src.indexOf("blob:") === 0) {
+            URL.revokeObjectURL(circlePreview.src);
+          }
+          circlePreview.removeAttribute("src");
+          circlePreview.controls = false;
+          circlePreview.load();
+        } catch (e) {}
+      }
+      if (circleStart) circleStart.hidden = false;
+      if (circleStop) circleStop.hidden = true;
+      if (circleTimer) circleTimer.hidden = true;
+    }
+
+    window.__obStopCircleRec = stopCircleStream;
 
     function showPanel(which) {
       var linkOn = which === "link";
       var imgOn = which === "img";
       var videoOn = which === "video";
+      var tgOn = which === "tg";
       if (linkPanel) linkPanel.hidden = !linkOn;
       if (imgPanel) imgPanel.hidden = !imgOn;
       if (videoPanel) videoPanel.hidden = !videoOn;
+      if (tgPanel) tgPanel.hidden = !tgOn;
       if (linkBtn) linkBtn.setAttribute("aria-expanded", linkOn ? "true" : "false");
       if (imgBtn) imgBtn.setAttribute("aria-expanded", imgOn ? "true" : "false");
       if (videoBtn) videoBtn.setAttribute("aria-expanded", videoOn ? "true" : "false");
+      if (tgBtn) tgBtn.setAttribute("aria-expanded", tgOn ? "true" : "false");
+      if (!tgOn) stopCircleStream();
     }
 
     if (linkBtn) {
@@ -1136,6 +1354,11 @@
     if (videoBtn) {
       videoBtn.addEventListener("click", function () {
         showPanel(videoPanel && videoPanel.hidden ? "video" : "");
+      });
+    }
+    if (tgBtn) {
+      tgBtn.addEventListener("click", function () {
+        showPanel(tgPanel && tgPanel.hidden ? "tg" : "");
       });
     }
 
@@ -1204,6 +1427,14 @@
         var name = ((document.getElementById("ob-md-video-name") || {}).value || "").trim();
         var url = ((document.getElementById("ob-md-video-url") || {}).value || "").trim();
         if (!name || !url) return;
+        var tgPost = parseTelegramPost(url);
+        if (tgPost) {
+          insertAtCursor(body, "{{tg:" + tgPost + "}}");
+          if (document.getElementById("ob-md-video-name")) document.getElementById("ob-md-video-name").value = "";
+          if (document.getElementById("ob-md-video-url")) document.getElementById("ob-md-video-url").value = "";
+          showPanel("");
+          return;
+        }
         var tag = queuePendingTag(name);
         var safe = name.replace(/[\[\]\"]/g, "");
         var md =
@@ -1218,6 +1449,186 @@
         if (document.getElementById("ob-md-video-name")) document.getElementById("ob-md-video-name").value = "";
         if (document.getElementById("ob-md-video-url")) document.getElementById("ob-md-video-url").value = "";
         showPanel("");
+      });
+    }
+
+    if (tgOk) {
+      tgOk.addEventListener("click", function () {
+        var raw = ((document.getElementById("ob-md-tg-post") || {}).value || "").trim();
+        var post = parseTelegramPost(raw);
+        if (!post) {
+          setTgMsg(false, "Укажите пост: oh_barbara/2710, ссылку t.me/… или скрипт виджета");
+          return;
+        }
+        insertAtCursor(body, "{{tg:" + post + "}}");
+        if (document.getElementById("ob-md-tg-post")) document.getElementById("ob-md-tg-post").value = "";
+        setTgMsg(true, "Виджет Telegram вставлен: " + post);
+        showPanel("");
+      });
+    }
+
+    function pickRecorderMime() {
+      var types = [
+        "video/webm;codecs=vp9,opus",
+        "video/webm;codecs=vp8,opus",
+        "video/webm",
+        "video/mp4",
+      ];
+      if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return "";
+      for (var i = 0; i < types.length; i++) {
+        if (MediaRecorder.isTypeSupported(types[i])) return types[i];
+      }
+      return "";
+    }
+
+    if (circleStart) {
+      circleStart.addEventListener("click", async function () {
+        setTgMsg(false, "");
+        circleBlob = null;
+        if (circleInsert) circleInsert.hidden = true;
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          setTgMsg(false, "Камера недоступна в этом браузере");
+          return;
+        }
+        if (!window.MediaRecorder) {
+          setTgMsg(false, "Запись видео не поддерживается");
+          return;
+        }
+        try {
+          stopCircleStream();
+          circleStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: {
+              facingMode: { ideal: "user" },
+              width: { ideal: 480 },
+              height: { ideal: 480 },
+            },
+          });
+          if (circlePreview) {
+            circlePreview.srcObject = circleStream;
+            circlePreview.muted = true;
+            try {
+              await circlePreview.play();
+            } catch (e) {}
+          }
+          circleChunks = [];
+          circleAbort = false;
+          var mime = pickRecorderMime();
+          var rec = mime
+            ? new MediaRecorder(circleStream, { mimeType: mime })
+            : new MediaRecorder(circleStream);
+          circleRecorder = rec;
+          rec.ondataavailable = function (ev) {
+            if (ev.data && ev.data.size) circleChunks.push(ev.data);
+          };
+          rec.onstop = function () {
+            if (circleAbort) return;
+            var type = rec.mimeType || mime || "video/webm";
+            circleBlob = new Blob(circleChunks, { type: type });
+            if (circleInsert) circleInsert.hidden = !circleBlob.size;
+            if (circleStart) circleStart.hidden = false;
+            if (circleStop) circleStop.hidden = true;
+            stopCircleTimer();
+            if (circleStream) {
+              circleStream.getTracks().forEach(function (t) {
+                try {
+                  t.stop();
+                } catch (e) {}
+              });
+              circleStream = null;
+            }
+            if (circlePreview && circleBlob && circleBlob.size) {
+              try {
+                circlePreview.srcObject = null;
+                circlePreview.src = URL.createObjectURL(circleBlob);
+                circlePreview.muted = false;
+                circlePreview.controls = true;
+                circlePreview.play().catch(function () {});
+              } catch (e) {}
+            }
+            setTgMsg(true, "Готово — нажмите «Вставить кружок»");
+          };
+          circleRecorder.start(250);
+          circleStartedAt = Date.now();
+          if (circleTimer) {
+            circleTimer.hidden = false;
+            circleTimer.textContent = "0:00";
+          }
+          stopCircleTimer();
+          circleTimerId = setInterval(function () {
+            var elapsed = Date.now() - circleStartedAt;
+            if (circleTimer) circleTimer.textContent = fmtCircleTime(elapsed);
+            if (elapsed >= 60000 && circleRecorder && circleRecorder.state === "recording") {
+              try {
+                circleRecorder.stop();
+              } catch (e) {}
+            }
+          }, 250);
+          if (circleStart) circleStart.hidden = true;
+          if (circleStop) circleStop.hidden = false;
+          setTgMsg(true, "Идёт запись… до 60 сек");
+        } catch (err) {
+          stopCircleStream();
+          var msg = (err && err.message) || String(err);
+          if (err && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")) {
+            msg = "Нет доступа к камере/микрофону — разрешите в настройках браузера";
+          }
+          setTgMsg(false, msg);
+        }
+      });
+    }
+
+    if (circleStop) {
+      circleStop.addEventListener("click", function () {
+        if (circleRecorder && circleRecorder.state === "recording") {
+          try {
+            circleRecorder.stop();
+          } catch (e) {}
+        } else {
+          stopCircleStream();
+        }
+      });
+    }
+
+    if (circleInsert) {
+      circleInsert.addEventListener("click", async function () {
+        if (!circleBlob || !circleBlob.size) {
+          setTgMsg(false, "Сначала запишите кружок");
+          return;
+        }
+        var token = sessionStorage.getItem("ob_blog_gh") || "";
+        var ext = /mp4/i.test(circleBlob.type) ? "mp4" : "webm";
+        var file = new File([circleBlob], "circle-" + Date.now() + "." + ext, {
+          type: circleBlob.type || "video/" + ext,
+        });
+        circleInsert.disabled = true;
+        setTgMsg(true, "Загрузка кружка…");
+        try {
+          var url = await uploadMediaFile(token, "video", file);
+          var name = "кружок";
+          var tag = queuePendingTag(name);
+          var md =
+            "[!!![" +
+            name +
+            "](" +
+            url +
+            ")](offtop.html?id=" +
+            encodeURIComponent(tag.slug) +
+            ")";
+          insertAtCursor(body, md);
+          circleBlob = null;
+          circleInsert.hidden = true;
+          if (circlePreview) {
+            circlePreview.removeAttribute("src");
+            circlePreview.controls = false;
+            circlePreview.load();
+          }
+          setTgMsg(true, "Кружок вставлен");
+          showPanel("");
+        } catch (e) {
+          setTgMsg(false, (e && e.message) || "Ошибка загрузки");
+        }
+        circleInsert.disabled = false;
       });
     }
 
