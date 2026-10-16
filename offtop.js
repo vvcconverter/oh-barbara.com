@@ -1481,13 +1481,51 @@
       return "";
     }
 
+    async function openCircleCamera() {
+      var md = navigator.mediaDevices;
+      if (!md || !md.getUserMedia) {
+        throw new Error("Камера недоступна в этом браузере (нужен HTTPS)");
+      }
+      var attempts = [
+        { audio: true, video: { facingMode: "user" } },
+        { audio: true, video: true },
+        { audio: false, video: true },
+      ];
+      var lastErr = null;
+      for (var i = 0; i < attempts.length; i++) {
+        try {
+          return await md.getUserMedia(attempts[i]);
+        } catch (e) {
+          lastErr = e;
+        }
+      }
+      throw lastErr || new Error("Камера не найдена");
+    }
+
+    function circleCamError(err) {
+      var name = (err && err.name) || "";
+      if (name === "NotAllowedError" || name === "PermissionDeniedError") {
+        return "Нет доступа к камере/микрофону — разрешите в настройках браузера";
+      }
+      if (name === "NotFoundError" || name === "DevicesNotFoundError" || /not found/i.test((err && err.message) || "")) {
+        return "Камера или микрофон не найдены. Подключите устройство или закройте другие программы, которые их заняли";
+      }
+      if (name === "NotReadableError" || name === "TrackStartError") {
+        return "Камера занята другим приложением — закройте Zoom/Teams/OBS и попробуйте снова";
+      }
+      if (name === "SecurityError") {
+        return "Браузер блокирует камеру — откройте сайт по HTTPS";
+      }
+      return (err && err.message) || "Не удалось открыть камеру";
+    }
+
     if (circleStart) {
       circleStart.addEventListener("click", async function () {
         setTgMsg(false, "");
         circleBlob = null;
         if (circleInsert) circleInsert.hidden = true;
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          setTgMsg(false, "Камера недоступна в этом браузере");
+          setTgMsg(false, "Камера недоступна в этом браузере (нужен HTTPS)");
           return;
         }
         if (!window.MediaRecorder) {
@@ -1496,14 +1534,7 @@
         }
         try {
           stopCircleStream();
-          circleStream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: {
-              facingMode: { ideal: "user" },
-              width: { ideal: 480 },
-              height: { ideal: 480 },
-            },
-          });
+          circleStream = await openCircleCamera();
           if (circlePreview) {
             circlePreview.srcObject = circleStream;
             circlePreview.muted = true;
@@ -1569,11 +1600,7 @@
           setTgMsg(true, "Идёт запись… до 60 сек");
         } catch (err) {
           stopCircleStream();
-          var msg = (err && err.message) || String(err);
-          if (err && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")) {
-            msg = "Нет доступа к камере/микрофону — разрешите в настройках браузера";
-          }
-          setTgMsg(false, msg);
+          setTgMsg(false, circleCamError(err));
         }
       });
     }
