@@ -278,7 +278,22 @@
             fsVid.src = video.currentSrc || video.src;
             fs.hidden = false;
             document.body.style.overflow = "hidden";
+            function fitFsBox() {
+              var box = fs.querySelector(".ob-circle-fs-box");
+              if (!box) return;
+              var vw = fsVid.videoWidth || 0;
+              var vh = fsVid.videoHeight || 0;
+              box.classList.remove("is-portrait", "is-landscape");
+              if (vw && vh) {
+                box.classList.add(vh > vw ? "is-portrait" : "is-landscape");
+                box.style.setProperty("--ob-v-ar", vw + " / " + vh);
+              } else {
+                box.classList.add("is-landscape");
+                box.style.removeProperty("--ob-v-ar");
+              }
+            }
             fsVid.onloadedmetadata = function () {
+              fitFsBox();
               try {
                 fsVid.currentTime = t;
               } catch (err) {}
@@ -1614,26 +1629,43 @@
       return "";
     }
 
+    function isPortraitShoot() {
+      try {
+        var type =
+          (screen.orientation && screen.orientation.type) ||
+          (window.orientation !== undefined
+            ? Math.abs(window.orientation) === 90
+              ? "landscape"
+              : "portrait"
+            : "");
+        if (type) return String(type).indexOf("portrait") === 0;
+      } catch (e) {}
+      return window.innerHeight >= window.innerWidth;
+    }
+
     async function openCircleCamera() {
       var md = navigator.mediaDevices;
       if (!md || !md.getUserMedia) {
         throw new Error("Камера недоступна в этом браузере (нужен HTTPS)");
       }
+      var portrait = isPortraitShoot();
+      var longSide = 1280;
+      var shortSide = 720;
+      var wIdeal = portrait ? shortSide : longSide;
+      var hIdeal = portrait ? longSide : shortSide;
+      var sizeVideo = {
+        width: { ideal: wIdeal },
+        height: { ideal: hIdeal },
+      };
       var attempts = [
         {
           audio: true,
-          video: {
-            facingMode: "user",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
+          video: Object.assign({ facingMode: "user" }, sizeVideo),
         },
-        {
-          audio: true,
-          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-        },
+        { audio: true, video: sizeVideo },
+        { audio: true, video: { facingMode: "user" } },
         { audio: true, video: true },
-        { audio: false, video: { width: { ideal: 1280 }, height: { ideal: 720 } } },
+        { audio: false, video: sizeVideo },
         { audio: false, video: true },
       ];
       var lastErr = null;
@@ -1653,10 +1685,14 @@
           var caps = track.getCapabilities() || {};
           var want = {};
           if (caps.width && caps.width.max) {
-            want.width = { ideal: Math.min(1280, caps.width.max) };
+            want.width = {
+              ideal: Math.min(wIdeal, caps.width.max),
+            };
           }
           if (caps.height && caps.height.max) {
-            want.height = { ideal: Math.min(720, caps.height.max) };
+            want.height = {
+              ideal: Math.min(hIdeal, caps.height.max),
+            };
           }
           if (want.width || want.height) {
             await track.applyConstraints(want);
