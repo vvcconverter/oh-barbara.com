@@ -1,6 +1,16 @@
 {
-  "updated": "2026-10-16T07:06:35.907Z",
+  "updated": "2026-10-16T07:08:02.381Z",
   "posts": [
+    {
+      "id": "post-mvamlhy2",
+      "title": "test3",
+      "type": "news",
+      "body": "test3",
+      "slug": "ох-барбара-test3",
+      "created": "2026-10-16T07:07:58.874Z",
+      "author": "oh_barbara",
+      "tags": []
+    },
     {
       "id": "post-mvahuj9l",
       "title": "Я лечу в Индонезию",
