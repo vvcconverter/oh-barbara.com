@@ -38,6 +38,91 @@
   let pendingTags = [];
   let editingId = null;
   var syncLocks = Object.create(null);
+  var deletedIds = Object.create(null);
+  var blogSyncChain = Promise.resolve();
+  var TOMB_KEY = "ob_blog_deleted_v1";
+
+  function enqueueBlogSync(task) {
+    var run = function () {
+      return Promise.resolve().then(task);
+    };
+    blogSyncChain = blogSyncChain.then(run, run);
+    return blogSyncChain;
+  }
+
+  function readTombstones() {
+    try {
+      var raw = localStorage.getItem(TOMB_KEY);
+      if (!raw) return Object.create(null);
+      var obj = JSON.parse(raw);
+      return obj && typeof obj === "object" ? obj : Object.create(null);
+    } catch (e) {
+      return Object.create(null);
+    }
+  }
+
+  function writeTombstones(map) {
+    try {
+      localStorage.setItem(TOMB_KEY, JSON.stringify(map || {}));
+    } catch (e) {}
+  }
+
+  function markDeleted(id) {
+    if (!id) return;
+    deletedIds[id] = true;
+    var map = readTombstones();
+    map[id] = Date.now();
+    writeTombstones(map);
+  }
+
+  function unmarkDeleted(id) {
+    if (!id) return;
+    delete deletedIds[id];
+    var map = readTombstones();
+    if (map[id]) {
+      delete map[id];
+      writeTombstones(map);
+    }
+  }
+
+  function isDeleted(id) {
+    if (!id) return false;
+    if (deletedIds[id]) return true;
+    var map = readTombstones();
+    return !!map[id];
+  }
+
+  function hydrateDeletedIds() {
+    var map = readTombstones();
+    Object.keys(map).forEach(function (id) {
+      deletedIds[id] = true;
+    });
+  }
+
+  function purgeGoneTombstones(posts) {
+    var map = readTombstones();
+    var have = Object.create(null);
+    (posts || []).forEach(function (p) {
+      if (p && p.id) have[p.id] = true;
+    });
+    var changed = false;
+    Object.keys(map).forEach(function (id) {
+      if (!have[id]) {
+        delete map[id];
+        delete deletedIds[id];
+        changed = true;
+      }
+    });
+    if (changed) writeTombstones(map);
+  }
+
+  function applyHiddenDeletes(data) {
+    if (!data || !Array.isArray(data.posts)) return data;
+    data.posts = data.posts.filter(function (p) {
+      return p && p.id && !isDeleted(p.id);
+    });
+    return data;
+  }
 
   function ensureBlogPosts() {
     if (!blogData || typeof blogData !== "object") blogData = { posts: [] };
@@ -757,7 +842,11 @@
 
   function render() {
     if (!feed) return;
+    applyHiddenDeletes(blogData);
     feedPostsSorted = Array.isArray(blogData.posts) ? blogData.posts.slice() : [];
+    feedPostsSorted = feedPostsSorted.filter(function (p) {
+      return p && p.id && !isDeleted(p.id);
+    });
     feedPostsSorted.sort(function (a, b) {
       return String(b.created || "").localeCompare(String(a.created || ""));
     });
@@ -1426,6 +1515,7 @@
   }
 
   async function loadBlog() {
+    hydrateDeletedIds();
     try {
       const res = await fetch("data/blog.json?t=" + Date.now(), {
         credentials: "same-origin",
@@ -1435,6 +1525,9 @@
       blogData = await res.json();
       if (!blogData || typeof blogData !== "object") blogData = { posts: [] };
       if (!Array.isArray(blogData.posts)) blogData.posts = [];
+      purgeGoneTombstones(blogData.posts.slice());
+      hydrateDeletedIds();
+      applyHiddenDeletes(blogData);
       render();
     } catch (e) {
       if (empty) {
@@ -1462,6 +1555,25 @@
       blogSha,
       message || "blog: update posts"
     );
+  }
+
+  async function commitBlogFresh(token, mutator, message) {
+    var lastErr = null;
+    for (var attempt = 0; attempt < 3; attempt++) {
+      try {
+        var remote = await fetchRemoteBlog(token);
+        remote.posts = Array.isArray(remote.posts) ? remote.posts : [];
+        mutator(remote);
+        remote.updated = new Date().toISOString();
+        await commitBlog(token, remote, message);
+        return remote;
+      } catch (e) {
+        lastErr = e;
+        var msg = (e && e.message) || String(e);
+        if (msg.indexOf(" 409") === -1 && msg.indexOf("409") === -1) throw e;
+      }
+    }
+    throw lastErr || new Error("GitHub conflict");
   }
 
   function isAuthed() {
@@ -2205,6 +2317,7 @@
       }
 
       syncLocks["del:" + delId] = true;
+      markDeleted(delId);
       removeLocalPost(delId);
       if (editingId === delId) {
         clearEditorFields();
@@ -2212,28 +2325,32 @@
       }
       render();
 
-      (async function () {
-        var token = sessionStorage.getItem("ob_blog_gh") || "";
+      var token = sessionStorage.getItem("ob_blog_gh") || "";
+      enqueueBlogSync(async function () {
         try {
-          var remote = await fetchRemoteBlog(token);
-          var list = Array.isArray(remote.posts) ? remote.posts : [];
-          var victim = null;
-          for (var i = 0; i < list.length; i++) {
-            if (list[i] && list[i].id === delId) {
-              victim = list[i];
-              break;
-            }
-          }
-          if (!victim) victim = victimBackup;
+          var victim = victimBackup;
+          var remote = await commitBlogFresh(
+            token,
+            function (data) {
+              var list = Array.isArray(data.posts) ? data.posts : [];
+              for (var i = 0; i < list.length; i++) {
+                if (list[i] && list[i].id === delId) {
+                  victim = list[i];
+                  break;
+                }
+              }
+              data.posts = list.filter(function (p) {
+                return p && p.id !== delId;
+              });
+            },
+            "blog: delete " + delId
+          );
+
           if (victim && victim.body) {
             try {
               await deleteMediaFromBody(token, victim.body);
             } catch (mediaErr) {}
           }
-          remote.posts = list.filter(function (p) {
-            return p && p.id !== delId;
-          });
-          remote.updated = new Date().toISOString();
           if (victim) {
             try {
               await removePostSitemap(token, victim);
@@ -2242,24 +2359,35 @@
               await removeUnusedOfftopTags(token, victim, remote.posts);
             } catch (e) {}
           }
-          await commitBlog(token, remote, "blog: delete " + delId);
-          blogData = remote;
+
+          var check = await fetchRemoteBlog(token);
+          var stillThere = (check.posts || []).some(function (p) {
+            return p && p.id === delId;
+          });
+          if (stillThere) throw new Error("post still on GitHub");
+
+          blogData = check;
           ensureBlogPosts();
+          applyHiddenDeletes(blogData);
+          removeLocalPost(delId);
           render();
         } catch (err) {
+          unmarkDeleted(delId);
           if (victimBackup) {
             ensureBlogPosts();
-            if (victimIndex < 0 || victimIndex > blogData.posts.length) {
-              blogData.posts.unshift(victimBackup);
-            } else {
-              blogData.posts.splice(victimIndex, 0, victimBackup);
+            if (!findLocalPost(delId)) {
+              if (victimIndex < 0 || victimIndex > blogData.posts.length) {
+                blogData.posts.unshift(victimBackup);
+              } else {
+                blogData.posts.splice(victimIndex, 0, victimBackup);
+              }
             }
             render();
           }
           window.alert("НЕ УДАЛИЛОСЬ");
         }
         delete syncLocks["del:" + delId];
-      })();
+      });
     });
   }
 
@@ -2320,36 +2448,55 @@
           });
         } catch (e) {}
 
-        (async function () {
+        enqueueBlogSync(async function () {
           try {
+            if (isDeleted(editId)) {
+              removeLocalPost(editId);
+              render();
+              return;
+            }
             pendingTags = tagsSnapshot.slice();
-            const remote = await fetchRemoteBlog(token);
-            remote.posts = Array.isArray(remote.posts) ? remote.posts : [];
-            var found = null;
-            for (var i = 0; i < remote.posts.length; i++) {
-              if (remote.posts[i] && remote.posts[i].id === editId) {
-                found = remote.posts[i];
-                break;
-              }
-            }
-            if (!found) throw new Error("Пост не найден");
-            found.title = title;
-            found.type = type;
-            found.body = body;
-            found.slug = slug;
-            found.updated = now;
-            if (tagSlugs.length) {
-              found.tags = (found.tags || []).concat(tagSlugs);
-            }
-            remote.updated = now;
             await commitPendingMeta(token);
             await commitPostSitemap(token, title);
-            await commitBlog(token, remote, "blog: edit " + title.slice(0, 64));
+            var remote = await commitBlogFresh(
+              token,
+              function (data) {
+                if (isDeleted(editId)) return;
+                var found = null;
+                for (var i = 0; i < data.posts.length; i++) {
+                  if (data.posts[i] && data.posts[i].id === editId) {
+                    found = data.posts[i];
+                    break;
+                  }
+                }
+                if (!found) throw new Error("Пост не найден");
+                found.title = title;
+                found.type = type;
+                found.body = body;
+                found.slug = slug;
+                found.updated = now;
+                if (tagSlugs.length) {
+                  found.tags = (found.tags || []).concat(tagSlugs);
+                }
+              },
+              "blog: edit " + title.slice(0, 64)
+            );
+            if (isDeleted(editId)) {
+              removeLocalPost(editId);
+              render();
+              return;
+            }
             blogData = remote;
             ensureBlogPosts();
+            applyHiddenDeletes(blogData);
+            var live = findLocalPost(editId);
+            if (live) delete live.pending;
             render();
           } catch (err) {
-            if (editBackup) {
+            if (isDeleted(editId)) {
+              removeLocalPost(editId);
+              render();
+            } else if (editBackup) {
               var cur = findLocalPost(editId);
               if (cur) {
                 Object.keys(cur).forEach(function (k) {
@@ -2364,7 +2511,7 @@
             window.alert(err.message || String(err));
           }
           delete syncLocks["save:" + editId];
-        })();
+        });
         return;
       }
 
@@ -2394,22 +2541,40 @@
         });
       } catch (e) {}
 
-      (async function () {
+      enqueueBlogSync(async function () {
         try {
+          if (isDeleted(postId)) {
+            removeLocalPost(postId);
+            render();
+            return;
+          }
           pendingTags = tagsSnapshot.slice();
-          const remote = await fetchRemoteBlog(token);
-          remote.posts = Array.isArray(remote.posts) ? remote.posts : [];
-          remote.posts = remote.posts.filter(function (p) {
-            return p && p.id !== postId;
-          });
-          var clean = stripPending(post);
-          remote.posts.unshift(clean);
-          remote.updated = now;
           await commitPendingMeta(token);
           await commitPostSitemap(token, title);
-          await commitBlog(token, remote, "blog: " + title.slice(0, 72));
+          if (isDeleted(postId)) {
+            removeLocalPost(postId);
+            render();
+            return;
+          }
+          var remote = await commitBlogFresh(
+            token,
+            function (data) {
+              if (isDeleted(postId)) return;
+              data.posts = data.posts.filter(function (p) {
+                return p && p.id !== postId;
+              });
+              data.posts.unshift(stripPending(post));
+            },
+            "blog: " + title.slice(0, 72)
+          );
+          if (isDeleted(postId)) {
+            removeLocalPost(postId);
+            render();
+            return;
+          }
           blogData = remote;
           ensureBlogPosts();
+          applyHiddenDeletes(blogData);
           render();
         } catch (err) {
           removeLocalPost(postId);
@@ -2417,7 +2582,7 @@
           window.alert(err.message || String(err));
         }
         delete syncLocks["save:" + postId];
-      })();
+      });
     });
   }
 
