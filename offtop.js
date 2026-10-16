@@ -957,7 +957,7 @@
         errors.push((e && e.message) || String(e));
       }
     }
-    if (errors.length) throw new Error(errors[0]);
+    return errors;
   }
 
   async function uploadMediaFile(token, kind, file) {
@@ -2166,15 +2166,21 @@
             }
           }
           if (victim && victim.body) {
-            await deleteMediaFromBody(token, victim.body);
+            try {
+              await deleteMediaFromBody(token, victim.body);
+            } catch (mediaErr) {}
           }
           remote.posts = list.filter(function (p) {
             return p && p.id !== delId;
           });
           remote.updated = new Date().toISOString();
           if (victim) {
-            await removePostSitemap(token, victim);
-            await removeUnusedOfftopTags(token, victim, remote.posts);
+            try {
+              await removePostSitemap(token, victim);
+            } catch (e) {}
+            try {
+              await removeUnusedOfftopTags(token, victim, remote.posts);
+            } catch (e) {}
           }
           await commitBlog(token, remote, "blog: delete " + delId);
           blogData = remote;
