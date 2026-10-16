@@ -226,28 +226,40 @@
         video.removeAttribute("controls");
         function syncPlay() {
           if (!playBtn) return;
-          playBtn.classList.toggle("is-playing", !video.paused && !video.ended);
+          var playing = !video.paused && !video.ended;
+          playBtn.classList.toggle("is-playing", playing);
+          playBtn.hidden = playing;
+        }
+        function toggleCirclePlay() {
+          if (video.paused || video.ended) {
+            if (playBtn) {
+              playBtn.classList.add("is-playing");
+              playBtn.hidden = true;
+            }
+            video.play().then(syncPlay).catch(function () {
+              if (playBtn) {
+                playBtn.classList.remove("is-playing");
+                playBtn.hidden = false;
+              }
+            });
+          } else {
+            video.pause();
+            syncPlay();
+          }
         }
         if (playBtn) {
           playBtn.addEventListener("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            if (video.paused || video.ended) {
-              video.play().catch(function () {});
-            } else {
-              video.pause();
-            }
+            toggleCirclePlay();
           });
         }
         video.addEventListener("click", function (e) {
           e.preventDefault();
-          if (video.paused || video.ended) {
-            video.play().catch(function () {});
-          } else {
-            video.pause();
-          }
+          toggleCirclePlay();
         });
         video.addEventListener("play", syncPlay);
+        video.addEventListener("playing", syncPlay);
         video.addEventListener("pause", syncPlay);
         video.addEventListener("ended", syncPlay);
         if (expandBtn) {
