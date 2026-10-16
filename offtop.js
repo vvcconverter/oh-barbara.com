@@ -142,14 +142,143 @@
     );
   }
 
-  function circleHtml(url, title) {
+  function circleHtml(url) {
     return (
+      '<div class="ob-circle-wrap">' +
+      '<div class="ob-circle-stage">' +
       '<video class="ob-blog-circle" src="' +
       esc(url) +
-      '" title="' +
-      esc(title) +
-      '" controls playsinline preload="metadata"></video>'
+      '" playsinline preload="metadata"></video>' +
+      '<button type="button" class="ob-circle-play" aria-hidden="true">' +
+      '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>' +
+      "</button>" +
+      "</div>" +
+      '<button type="button" class="ob-circle-expand" aria-hidden="true">' +
+      '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm12 0h-2v3h-3v2h5v-5zM7 7h3V5H5v5h2V7zm12-2h-5v2h3v3h2V5z"/></svg>' +
+      "</button>" +
+      "</div>"
     );
+  }
+
+  var circleFsSource = null;
+
+  function ensureCircleFs() {
+    var fs = document.getElementById("ob-circle-fs");
+    if (fs) return fs;
+    fs = document.createElement("div");
+    fs.id = "ob-circle-fs";
+    fs.className = "ob-circle-fs";
+    fs.hidden = true;
+    fs.innerHTML =
+      '<div class="ob-circle-fs-box">' +
+      '<video class="ob-circle-fs-video" controls playsinline></video>' +
+      '<button type="button" class="ob-circle-fs-back" aria-hidden="true">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 .01 20A10 10 0 0 0 12 2zm0 2a8 8 0 1 1-.01 16A8 8 0 0 1 12 4zm1 3v5.59l3.3 1.91-.9 1.57L11 13.5V7h2z"/></svg>' +
+      "</button>" +
+      "</div>";
+    document.body.appendChild(fs);
+    var back = fs.querySelector(".ob-circle-fs-back");
+    var vid = fs.querySelector(".ob-circle-fs-video");
+    function closeFs() {
+      var t = vid ? vid.currentTime || 0 : 0;
+      var playing = vid && !vid.paused && !vid.ended;
+      if (vid) {
+        try {
+          vid.pause();
+        } catch (e) {}
+        vid.removeAttribute("src");
+        try {
+          vid.load();
+        } catch (e) {}
+      }
+      if (circleFsSource) {
+        try {
+          circleFsSource.currentTime = t;
+        } catch (e) {}
+        if (playing) circleFsSource.play().catch(function () {});
+        circleFsSource = null;
+      }
+      fs.hidden = true;
+      document.body.style.overflow = "";
+    }
+    if (back) back.addEventListener("click", closeFs);
+    fs.addEventListener("click", function (e) {
+      if (e.target === fs) closeFs();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !fs.hidden) closeFs();
+    });
+    return fs;
+  }
+
+  function mountCirclePlayers(root) {
+    var scope = root || document;
+    var wraps = scope.querySelectorAll
+      ? scope.querySelectorAll(".ob-circle-wrap:not([data-circle-ready])")
+      : [];
+    for (var i = 0; i < wraps.length; i++) {
+      (function (wrap) {
+        wrap.setAttribute("data-circle-ready", "1");
+        var video = wrap.querySelector(".ob-blog-circle");
+        var playBtn = wrap.querySelector(".ob-circle-play");
+        var expandBtn = wrap.querySelector(".ob-circle-expand");
+        if (!video) return;
+        video.removeAttribute("controls");
+        function syncPlay() {
+          if (!playBtn) return;
+          playBtn.classList.toggle("is-playing", !video.paused && !video.ended);
+        }
+        if (playBtn) {
+          playBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (video.paused || video.ended) {
+              video.play().catch(function () {});
+            } else {
+              video.pause();
+            }
+          });
+        }
+        video.addEventListener("click", function (e) {
+          e.preventDefault();
+          if (video.paused || video.ended) {
+            video.play().catch(function () {});
+          } else {
+            video.pause();
+          }
+        });
+        video.addEventListener("play", syncPlay);
+        video.addEventListener("pause", syncPlay);
+        video.addEventListener("ended", syncPlay);
+        if (expandBtn) {
+          expandBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var fs = ensureCircleFs();
+            var fsVid = fs.querySelector(".ob-circle-fs-video");
+            if (!fsVid) return;
+            var wasPaused = video.paused;
+            var t = video.currentTime || 0;
+            try {
+              video.pause();
+            } catch (err) {}
+            circleFsSource = video;
+            fsVid.src = video.currentSrc || video.src;
+            fs.hidden = false;
+            document.body.style.overflow = "hidden";
+            fsVid.onloadedmetadata = function () {
+              try {
+                fsVid.currentTime = t;
+              } catch (err) {}
+              if (!wasPaused) fsVid.play().catch(function () {});
+            };
+            try {
+              fsVid.load();
+            } catch (err) {}
+          });
+        }
+      })(wraps[i]);
+    }
   }
 
   function parseTelegramPost(raw) {
@@ -223,7 +352,7 @@
   function mediaOrTgHtml(url, title, asCircle) {
     var post = parseTelegramPost(url);
     if (post) return tgPostHtml(post);
-    return asCircle ? circleHtml(url, title) : videoHtml(url, title);
+    return asCircle ? circleHtml(url) : videoHtml(url, title);
   }
 
   function mdToHtml(src) {
@@ -233,25 +362,16 @@
     });
     s = s.replace(
       /\[!!!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)/g,
-      function (_, alt, vidInner, href) {
+      function (_, alt, vidInner) {
         var vidUrl = String(vidInner || "").trim().split(/\s+/)[0];
-        var inner = mediaOrTgHtml(vidUrl, alt, true);
-        if (inner.indexOf("ob-tg-post") >= 0) return inner;
-        return (
-          '<a href="' +
-          esc(String(href || "").trim()) +
-          '">' +
-          inner +
-          "</a>"
-        );
+        return mediaOrTgHtml(vidUrl, alt, true);
       }
     );
     s = s.replace(/!!!\[([^\]]*)\]\(([^)]+)\)/g, function (_, alt, inner) {
       var raw = String(inner || "").trim();
       var m = raw.match(/^(\S+)(?:\s+"([^"]*)")?$/);
       var url = m ? m[1] : raw;
-      var title = m && m[2] ? m[2] : alt;
-      return mediaOrTgHtml(url, title, true);
+      return mediaOrTgHtml(url, alt, true);
     });
     s = s.replace(
       /\[!!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)/g,
@@ -409,6 +529,7 @@
     });
     document.body.classList.add("is-feed-ready");
     mountTelegramWidgets(feed);
+    mountCirclePlayers(feed);
     try {
       var raw = new URLSearchParams(location.search).get("id") || "";
       var q = raw;
@@ -1487,19 +1608,50 @@
         throw new Error("Камера недоступна в этом браузере (нужен HTTPS)");
       }
       var attempts = [
-        { audio: true, video: { facingMode: "user" } },
+        {
+          audio: true,
+          video: {
+            facingMode: "user",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+        },
+        {
+          audio: true,
+          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+        },
         { audio: true, video: true },
+        { audio: false, video: { width: { ideal: 1280 }, height: { ideal: 720 } } },
         { audio: false, video: true },
       ];
       var lastErr = null;
+      var stream = null;
       for (var i = 0; i < attempts.length; i++) {
         try {
-          return await md.getUserMedia(attempts[i]);
+          stream = await md.getUserMedia(attempts[i]);
+          break;
         } catch (e) {
           lastErr = e;
         }
       }
-      throw lastErr || new Error("Камера не найдена");
+      if (!stream) throw lastErr || new Error("Камера не найдена");
+      var track = stream.getVideoTracks()[0];
+      if (track && typeof track.getCapabilities === "function") {
+        try {
+          var caps = track.getCapabilities() || {};
+          var want = {};
+          if (caps.width && caps.width.max) {
+            want.width = { ideal: Math.min(1280, caps.width.max) };
+          }
+          if (caps.height && caps.height.max) {
+            want.height = { ideal: Math.min(720, caps.height.max) };
+          }
+          if (want.width || want.height) {
+            await track.applyConstraints(want);
+          }
+        } catch (e) {}
+      }
+      return stream;
     }
 
     function circleCamError(err) {
@@ -1545,9 +1697,25 @@
           circleChunks = [];
           circleAbort = false;
           var mime = pickRecorderMime();
-          var rec = mime
-            ? new MediaRecorder(circleStream, { mimeType: mime })
-            : new MediaRecorder(circleStream);
+          var vTrack = circleStream.getVideoTracks()[0];
+          var vSet =
+            vTrack && typeof vTrack.getSettings === "function"
+              ? vTrack.getSettings()
+              : {};
+          var vh = vSet.height || 720;
+          var recOpts = {
+            videoBitsPerSecond: vh >= 720 ? 2500000 : 1200000,
+            audioBitsPerSecond: 128000,
+          };
+          if (mime) recOpts.mimeType = mime;
+          var rec;
+          try {
+            rec = new MediaRecorder(circleStream, recOpts);
+          } catch (e) {
+            rec = mime
+              ? new MediaRecorder(circleStream, { mimeType: mime })
+              : new MediaRecorder(circleStream);
+          }
           circleRecorder = rec;
           rec.ondataavailable = function (ev) {
             if (ev.data && ev.data.size) circleChunks.push(ev.data);
