@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Manrope:wght@400;500;600&display=optional" />
-<link rel="stylesheet" href="styles.css?v=125" />
+<link rel="stylesheet" href="styles.css?v=127" />
 </head>
 <body class="ob-offtop-page" itemscope itemtype="https://schema.org/Blog">
 <div class="noise" aria-hidden="true"></div>
@@ -99,6 +99,9 @@
         <button type="button" class="ob-blog-md-ico" id="ob-md-video" title="Добавить видео" aria-label="Добавить видео" aria-expanded="false" aria-controls="ob-md-video-panel">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M17 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5l4 4v-11l-4 4z"/></svg>
         </button>
+        <button type="button" class="ob-blog-md-ico" id="ob-md-tg" title="Telegram: пост или кружок" aria-label="Telegram: пост или кружок" aria-expanded="false" aria-controls="ob-md-tg-panel">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9.78 15.39l-.39 4.48c.56 0 .8-.24 1.09-.53l2.62-2.5 5.44 3.98c1 .55 1.71.26 1.97-.92L23.9 3.72c.33-1.34-.49-1.86-1.45-1.54L1.34 9.72C.03 10.23.05 10.97 1.1 11.3l5.6 1.75L19.14 5.4c.62-.4 1.18-.18.72.23L9.78 15.39z"/></svg>
+        </button>
       </div>
       <div class="ob-blog-md-panel" id="ob-md-link-panel" hidden>
         <label for="ob-md-link-name">Название</label>
@@ -131,6 +134,23 @@
         <p class="ob-blog-err" id="ob-md-video-upload-err" hidden></p>
         <p class="ob-blog-ok" id="ob-md-video-upload-ok" hidden></p>
       </div>
+      <div class="ob-blog-md-panel" id="ob-md-tg-panel" hidden>
+        <label for="ob-md-tg-post">Пост Telegram</label>
+        <input type="text" id="ob-md-tg-post" autocomplete="off" placeholder="oh_barbara/2710 или скрипт виджета" />
+        <button type="button" class="btn btn-ghost" id="ob-md-tg-ok">Вставить виджет</button>
+        <p class="ob-blog-md-sep">Кружок с камеры</p>
+        <div class="ob-circle-rec">
+          <video id="ob-md-circle-preview" class="ob-circle-preview" playsinline muted autoplay></video>
+          <div class="ob-circle-rec-actions">
+            <button type="button" class="btn btn-ghost" id="ob-md-circle-start">Записать кружок</button>
+            <button type="button" class="btn btn-ghost" id="ob-md-circle-stop" hidden>Стоп</button>
+            <button type="button" class="btn btn-ghost" id="ob-md-circle-ok" hidden>Вставить кружок</button>
+          </div>
+          <p class="ob-circle-timer" id="ob-md-circle-timer" hidden>0:00</p>
+        </div>
+        <p class="ob-blog-err" id="ob-md-tg-err" hidden></p>
+        <p class="ob-blog-ok" id="ob-md-tg-ok-msg" hidden></p>
+      </div>
       <textarea id="ob-blog-body" rows="8" maxlength="20000" required></textarea>
       <button type="button" class="ob-blog-body-grow" id="ob-blog-body-grow" aria-label="Потянуть поле вниз">↓</button>
       <p class="ob-blog-err" id="ob-blog-save-err" hidden></p>
@@ -142,6 +162,6 @@
   </div>
 </div>
 
-<script src="offtop.js?v=33" defer></script>
+<script src="offtop.js?v=35" defer></script>
 </body>
 </html>
