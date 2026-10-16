@@ -146,9 +146,9 @@
     return (
       '<div class="ob-circle-wrap">' +
       '<div class="ob-circle-stage">' +
-      '<video class="ob-blog-circle" src="' +
+      '<video class="ob-blog-circle" data-src="' +
       esc(url) +
-      '" playsinline preload="metadata"></video>' +
+      '" playsinline preload="none"></video>' +
       '<button type="button" class="ob-circle-play" aria-hidden="true">' +
       '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>' +
       "</button>" +
@@ -158,6 +158,19 @@
       "</button>" +
       "</div>"
     );
+  }
+
+  function ensureCircleSrc(video) {
+    if (!video) return;
+    var lazy = video.getAttribute("data-src");
+    if (!lazy) return;
+    if (!video.getAttribute("src")) {
+      video.setAttribute("src", lazy);
+      try {
+        video.load();
+      } catch (e) {}
+    }
+    video.removeAttribute("data-src");
   }
 
   var circleFsSource = null;
@@ -231,6 +244,7 @@
           playBtn.hidden = playing;
         }
         function toggleCirclePlay() {
+          ensureCircleSrc(video);
           if (video.paused || video.ended) {
             if (playBtn) {
               playBtn.classList.add("is-playing");
@@ -269,13 +283,14 @@
             var fs = ensureCircleFs();
             var fsVid = fs.querySelector(".ob-circle-fs-video");
             if (!fsVid) return;
+            ensureCircleSrc(video);
             var wasPaused = video.paused;
             var t = video.currentTime || 0;
             try {
               video.pause();
             } catch (err) {}
             circleFsSource = video;
-            fsVid.src = video.currentSrc || video.src;
+            fsVid.src = video.currentSrc || video.src || video.getAttribute("data-src") || "";
             fs.hidden = false;
             document.body.style.overflow = "hidden";
             function fitFsBox() {
@@ -351,28 +366,72 @@
     });
   }
 
-  function mountTelegramWidgets(root) {
+  function mountOneTelegramWidget(el) {
+    if (!el || el.getAttribute("data-tg-mounted")) return;
+    var post = el.getAttribute("data-telegram-post") || "";
+    if (!post) return;
     ensureTgResizeListener();
+    el.setAttribute("data-tg-mounted", "1");
+    el.innerHTML = "";
+    var iframe = document.createElement("iframe");
+    iframe.id = "telegram-post-" + post.replace(/[^\w]+/g, "-");
+    iframe.src = "https://t.me/" + post + "?embed=1&mode=tme&dark=1";
+    iframe.width = "100%";
+    iframe.setAttribute("frameborder", "0");
+    iframe.setAttribute("scrolling", "no");
+    iframe.setAttribute("allowfullscreen", "true");
+    iframe.style.cssText =
+      "overflow:hidden;border:none;min-width:280px;width:100%;height:380px;background:transparent;";
+    el.appendChild(iframe);
+  }
+
+  function mountTelegramWidgets(root) {
     var scope = root || document;
     var nodes = scope.querySelectorAll
       ? scope.querySelectorAll(".ob-tg-post:not([data-tg-mounted])")
       : [];
-    for (var i = 0; i < nodes.length; i++) {
-      var el = nodes[i];
-      var post = el.getAttribute("data-telegram-post") || "";
-      if (!post) continue;
-      el.setAttribute("data-tg-mounted", "1");
-      el.innerHTML = "";
-      var iframe = document.createElement("iframe");
-      iframe.id = "telegram-post-" + post.replace(/[^\w]+/g, "-");
-      iframe.src = "https://t.me/" + post + "?embed=1&mode=tme&dark=1";
-      iframe.width = "100%";
-      iframe.setAttribute("frameborder", "0");
-      iframe.setAttribute("scrolling", "no");
-      iframe.setAttribute("allowfullscreen", "true");
-      iframe.style.cssText =
-        "overflow:hidden;border:none;min-width:280px;width:100%;height:380px;background:transparent;";
-      el.appendChild(iframe);
+    for (var i = 0; i < nodes.length; i++) mountOneTelegramWidget(nodes[i]);
+  }
+
+  var heavyMediaObs = null;
+  function observeHeavyMedia(root) {
+    var scope = root || document;
+    if (!scope.querySelectorAll) return;
+    var nodes = scope.querySelectorAll(
+      ".ob-tg-post:not([data-tg-mounted]):not([data-media-obs]), .ob-circle-wrap:not([data-media-obs])"
+    );
+    if (!nodes.length) return;
+    if (!("IntersectionObserver" in window)) {
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        if (n.classList.contains("ob-tg-post")) mountOneTelegramWidget(n);
+        if (n.classList.contains("ob-circle-wrap")) {
+          ensureCircleSrc(n.querySelector(".ob-blog-circle"));
+        }
+      }
+      return;
+    }
+    if (!heavyMediaObs) {
+      heavyMediaObs = new IntersectionObserver(
+        function (entries) {
+          for (var j = 0; j < entries.length; j++) {
+            var en = entries[j];
+            if (!en.isIntersecting) continue;
+            var el = en.target;
+            heavyMediaObs.unobserve(el);
+            el.setAttribute("data-media-obs", "1");
+            if (el.classList.contains("ob-tg-post")) mountOneTelegramWidget(el);
+            if (el.classList.contains("ob-circle-wrap")) {
+              ensureCircleSrc(el.querySelector(".ob-blog-circle"));
+            }
+          }
+        },
+        { root: null, rootMargin: "240px 0px", threshold: 0.01 }
+      );
+    }
+    for (var k = 0; k < nodes.length; k++) {
+      nodes[k].setAttribute("data-media-obs", "1");
+      heavyMediaObs.observe(nodes[k]);
     }
   }
 
@@ -504,66 +563,183 @@
       .join("");
   }
 
-  function render() {
-    if (!feed) return;
-    const posts = Array.isArray(blogData.posts) ? blogData.posts.slice() : [];
-    posts.sort(function (a, b) {
-      return String(b.created || "").localeCompare(String(a.created || ""));
-    });
-    feed.querySelectorAll("article.ob-blog-post").forEach(function (n) {
-      n.remove();
-    });
-    if (empty) empty.hidden = true;
-    var admin = isAuthed();
-    posts.forEach(function (p) {
-      const art = document.createElement("article");
-      art.className = "ob-blog-post reveal is-in";
-      art.setAttribute("itemprop", "blogPost");
-      art.setAttribute("itemscope", "");
-      art.setAttribute("itemtype", "https://schema.org/BlogPosting");
-      var permalink = p.slug || postSitemapId(p.title || "");
-      if (permalink) art.id = permalink;
-      else if (p.id) art.id = p.id;
-      art.innerHTML =
-        '<header class="ob-blog-post-head">' +
-        '<span class="ob-blog-type">' +
-        esc(typeLabel(p.type)) +
-        "</span>" +
-        '<time datetime="' +
-        esc(p.created || "") +
-        '" itemprop="datePublished">' +
-        esc(fmtDate(p.created)) +
-        "</time>" +
-        (admin && p.id
-          ? '<span class="ob-blog-admin-btns">' +
-            '<button type="button" class="ob-blog-edit-btn" data-edit-id="' +
-            esc(p.id) +
-            '">Изменить</button>' +
-            '<button type="button" class="ob-blog-del-btn" data-del-id="' +
-            esc(p.id) +
-            '" title="удалить безвозвратно" aria-label="удалить безвозвратно">' +
-            '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9zm-1 12h12a1 1 0 0 0 1-1V7H5v13a1 1 0 0 0 1 1z"/></svg>' +
-            "</button></span>"
-          : "") +
-        "</header>" +
-        "<h2 itemprop=\"headline\">" +
-        esc(p.title) +
-        "</h2>" +
-        '<div class="ob-blog-body" itemprop="articleBody">' +
-        mdToHtml(p.body || "") +
-        "</div>";
-      feed.appendChild(art);
-    });
-    document.body.classList.add("is-feed-ready");
-    mountTelegramWidgets(feed);
-    mountCirclePlayers(feed);
+  var FEED_PAGE = 8;
+  var feedPostsSorted = [];
+  var feedShown = 0;
+  var feedScrollObs = null;
+  var feedScrollBusy = false;
+
+  function feedQueryId() {
     try {
       var raw = new URLSearchParams(location.search).get("id") || "";
       var q = raw;
       try {
         q = decodeURIComponent(raw);
       } catch (e) {}
-      if (q && q !== GATE && raw !== GATE) {
+      if (!q || q === GATE || raw === GATE) return "";
+      return q;
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function buildPostArticle(p, admin) {
+    const art = document.createElement("article");
+    art.className = "ob-blog-post reveal is-in";
+    art.setAttribute("itemprop", "blogPost");
+    art.setAttribute("itemscope", "");
+    art.setAttribute("itemtype", "https://schema.org/BlogPosting");
+    var permalink = p.slug || postSitemapId(p.title || "");
+    if (permalink) art.id = permalink;
+    else if (p.id) art.id = p.id;
+    art.innerHTML =
+      '<header class="ob-blog-post-head">' +
+      '<span class="ob-blog-type">' +
+      esc(typeLabel(p.type)) +
+      "</span>" +
+      '<time datetime="' +
+      esc(p.created || "") +
+      '" itemprop="datePublished">' +
+      esc(fmtDate(p.created)) +
+      "</time>" +
+      (admin && p.id
+        ? '<span class="ob-blog-admin-btns">' +
+          '<button type="button" class="ob-blog-edit-btn" data-edit-id="' +
+          esc(p.id) +
+          '">Изменить</button>' +
+          '<button type="button" class="ob-blog-del-btn" data-del-id="' +
+          esc(p.id) +
+          '" title="удалить безвозвратно" aria-label="удалить безвозвратно">' +
+          '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9zm-1 12h12a1 1 0 0 0 1-1V7H5v13a1 1 0 0 0 1 1z"/></svg>' +
+          "</button></span>"
+        : "") +
+      "</header>" +
+      "<h2 itemprop=\"headline\">" +
+      esc(p.title) +
+      "</h2>" +
+      '<div class="ob-blog-body" itemprop="articleBody">' +
+      mdToHtml(p.body || "") +
+      "</div>";
+    return art;
+  }
+
+  function ensureFeedSentinel() {
+    var sent = document.getElementById("ob-blog-feed-sent");
+    if (sent) return sent;
+    sent = document.createElement("div");
+    sent.id = "ob-blog-feed-sent";
+    sent.className = "ob-blog-feed-sent";
+    sent.setAttribute("aria-hidden", "true");
+    feed.appendChild(sent);
+    return sent;
+  }
+
+  function updateFeedSentinel() {
+    var sent = document.getElementById("ob-blog-feed-sent");
+    if (!sent) return;
+    sent.hidden = feedShown >= feedPostsSorted.length;
+  }
+
+  function activateFeedChunk(chunkRoot) {
+    mountCirclePlayers(chunkRoot || feed);
+    observeHeavyMedia(chunkRoot || feed);
+  }
+
+  function appendFeedPosts(count) {
+    if (!feed || feedShown >= feedPostsSorted.length) {
+      updateFeedSentinel();
+      return 0;
+    }
+    var admin = isAuthed();
+    var sent = ensureFeedSentinel();
+    var n = Math.max(0, count | 0);
+    var added = 0;
+    var frag = document.createDocumentFragment();
+    while (added < n && feedShown < feedPostsSorted.length) {
+      frag.appendChild(buildPostArticle(feedPostsSorted[feedShown], admin));
+      feedShown += 1;
+      added += 1;
+    }
+    feed.insertBefore(frag, sent);
+    activateFeedChunk(feed);
+    updateFeedSentinel();
+    return added;
+  }
+
+  function loadMoreFeed() {
+    if (feedScrollBusy) return;
+    if (feedShown >= feedPostsSorted.length) {
+      updateFeedSentinel();
+      return;
+    }
+    feedScrollBusy = true;
+    appendFeedPosts(FEED_PAGE);
+    feedScrollBusy = false;
+  }
+
+  function setupFeedScroll() {
+    var sent = ensureFeedSentinel();
+    updateFeedSentinel();
+    if (feedScrollObs) {
+      try {
+        feedScrollObs.disconnect();
+      } catch (e) {}
+      feedScrollObs = null;
+    }
+    if (!("IntersectionObserver" in window)) {
+      while (feedShown < feedPostsSorted.length) appendFeedPosts(FEED_PAGE);
+      return;
+    }
+    feedScrollObs = new IntersectionObserver(
+      function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) loadMoreFeed();
+        }
+      },
+      { root: null, rootMargin: "400px 0px", threshold: 0 }
+    );
+    feedScrollObs.observe(sent);
+  }
+
+  function initialFeedCount(posts) {
+    var q = feedQueryId();
+    var need = FEED_PAGE;
+    if (q) {
+      for (var i = 0; i < posts.length; i++) {
+        var p = posts[i];
+        var permalink = p.slug || postSitemapId(p.title || "");
+        if (permalink === q || p.id === q) {
+          need = Math.max(need, i + 1);
+          break;
+        }
+      }
+    }
+    return need;
+  }
+
+  function render() {
+    if (!feed) return;
+    feedPostsSorted = Array.isArray(blogData.posts) ? blogData.posts.slice() : [];
+    feedPostsSorted.sort(function (a, b) {
+      return String(b.created || "").localeCompare(String(a.created || ""));
+    });
+    feedShown = 0;
+    feed.querySelectorAll("article.ob-blog-post").forEach(function (n) {
+      n.remove();
+    });
+    var oldSent = document.getElementById("ob-blog-feed-sent");
+    if (oldSent) oldSent.remove();
+    if (empty) empty.hidden = true;
+    if (!feedPostsSorted.length) {
+      document.body.classList.add("is-feed-ready");
+      return;
+    }
+    appendFeedPosts(initialFeedCount(feedPostsSorted));
+    setupFeedScroll();
+    document.body.classList.add("is-feed-ready");
+    try {
+      var q = feedQueryId();
+      if (q) {
         var target = document.getElementById(q);
         if (target) {
           requestAnimationFrame(function () {
