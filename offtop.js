@@ -37,6 +37,43 @@
   let knownSlugs = Object.create(null);
   let pendingTags = [];
   let editingId = null;
+  var syncLocks = Object.create(null);
+
+  function ensureBlogPosts() {
+    if (!blogData || typeof blogData !== "object") blogData = { posts: [] };
+    if (!Array.isArray(blogData.posts)) blogData.posts = [];
+    return blogData.posts;
+  }
+
+  function findLocalPost(id) {
+    var list = ensureBlogPosts();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id === id) return list[i];
+    }
+    return null;
+  }
+
+  function removeLocalPost(id) {
+    ensureBlogPosts();
+    blogData.posts = blogData.posts.filter(function (p) {
+      return p && p.id !== id;
+    });
+  }
+
+  function clonePost(p) {
+    try {
+      return JSON.parse(JSON.stringify(p));
+    } catch (e) {
+      return p ? Object.assign({}, p) : null;
+    }
+  }
+
+  function stripPending(p) {
+    if (!p) return p;
+    var out = clonePost(p);
+    if (out) delete out.pending;
+    return out;
+  }
 
   function findPost(id) {
     var list = Array.isArray(blogData.posts) ? blogData.posts : [];
@@ -585,13 +622,14 @@
 
   function buildPostArticle(p, admin) {
     const art = document.createElement("article");
-    art.className = "ob-blog-post reveal is-in";
+    art.className = "ob-blog-post reveal is-in" + (p && p.pending ? " is-pending" : "");
     art.setAttribute("itemprop", "blogPost");
     art.setAttribute("itemscope", "");
     art.setAttribute("itemtype", "https://schema.org/BlogPosting");
     var permalink = p.slug || postSitemapId(p.title || "");
     if (permalink) art.id = permalink;
     else if (p.id) art.id = p.id;
+    if (p && p.id) art.setAttribute("data-post-id", p.id);
     art.innerHTML =
       '<header class="ob-blog-post-head">' +
       '<span class="ob-blog-type">' +
@@ -2152,10 +2190,31 @@
       if (!delBtn || !feed.contains(delBtn)) return;
       var delId = delBtn.getAttribute("data-del-id");
       if (!delId || !isAuthed()) return;
+      if (syncLocks["del:" + delId] || syncLocks["save:" + delId]) return;
+
+      var victimLocal = findLocalPost(delId);
+      if (!victimLocal) return;
+      var victimBackup = clonePost(victimLocal);
+      var victimIndex = -1;
+      var listNow = ensureBlogPosts();
+      for (var vi = 0; vi < listNow.length; vi++) {
+        if (listNow[vi] && listNow[vi].id === delId) {
+          victimIndex = vi;
+          break;
+        }
+      }
+
+      syncLocks["del:" + delId] = true;
+      removeLocalPost(delId);
+      if (editingId === delId) {
+        clearEditorFields();
+        closeModal();
+      }
+      render();
+
       (async function () {
         var token = sessionStorage.getItem("ob_blog_gh") || "";
         try {
-          delBtn.disabled = true;
           var remote = await fetchRemoteBlog(token);
           var list = Array.isArray(remote.posts) ? remote.posts : [];
           var victim = null;
@@ -2165,6 +2224,7 @@
               break;
             }
           }
+          if (!victim) victim = victimBackup;
           if (victim && victim.body) {
             try {
               await deleteMediaFromBody(token, victim.body);
@@ -2184,15 +2244,21 @@
           }
           await commitBlog(token, remote, "blog: delete " + delId);
           blogData = remote;
-          if (editingId === delId) {
-            clearEditorFields();
-            closeModal();
-          }
+          ensureBlogPosts();
           render();
         } catch (err) {
-          delBtn.disabled = false;
-          window.alert(err.message || String(err));
+          if (victimBackup) {
+            ensureBlogPosts();
+            if (victimIndex < 0 || victimIndex > blogData.posts.length) {
+              blogData.posts.unshift(victimBackup);
+            } else {
+              blogData.posts.splice(victimIndex, 0, victimBackup);
+            }
+            render();
+          }
+          window.alert("НЕ УДАЛИЛОСЬ");
         }
+        delete syncLocks["del:" + delId];
       })();
     });
   }
@@ -2213,71 +2279,145 @@
       const body = normalizeBodyLinks(bodyRaw);
       if (bodyEl && body !== bodyRaw) bodyEl.value = body;
       if (!title || !body) return;
-      try {
-        const remote = await fetchRemoteBlog(token);
-        remote.posts = Array.isArray(remote.posts) ? remote.posts : [];
-        const now = new Date().toISOString();
-        if (editingId) {
-          var found = null;
-          for (var i = 0; i < remote.posts.length; i++) {
-            if (remote.posts[i] && remote.posts[i].id === editingId) {
-              found = remote.posts[i];
-              break;
+
+      const now = new Date().toISOString();
+      const slug = postSitemapId(title);
+      const tagSlugs = pendingTags.map(function (t) {
+        return t.slug;
+      });
+      const tagsSnapshot = pendingTags.slice();
+
+      if (editingId) {
+        if (syncLocks["save:" + editingId] || syncLocks["del:" + editingId]) return;
+        var localFound = findLocalPost(editingId);
+        if (!localFound) {
+          if (saveErr) {
+            saveErr.hidden = false;
+            saveErr.textContent = "Пост не найден";
+          }
+          return;
+        }
+        var editBackup = clonePost(localFound);
+        var editId = editingId;
+        syncLocks["save:" + editId] = true;
+        localFound.title = title;
+        localFound.type = type;
+        localFound.body = body;
+        localFound.slug = slug;
+        localFound.updated = now;
+        localFound.pending = true;
+        if (tagSlugs.length) {
+          localFound.tags = (localFound.tags || []).concat(tagSlugs);
+        }
+        pendingTags = [];
+        clearEditorFields();
+        closeModal();
+        render();
+        try {
+          requestAnimationFrame(function () {
+            var el = document.getElementById(slug);
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        } catch (e) {}
+
+        (async function () {
+          try {
+            pendingTags = tagsSnapshot.slice();
+            const remote = await fetchRemoteBlog(token);
+            remote.posts = Array.isArray(remote.posts) ? remote.posts : [];
+            var found = null;
+            for (var i = 0; i < remote.posts.length; i++) {
+              if (remote.posts[i] && remote.posts[i].id === editId) {
+                found = remote.posts[i];
+                break;
+              }
             }
+            if (!found) throw new Error("Пост не найден");
+            found.title = title;
+            found.type = type;
+            found.body = body;
+            found.slug = slug;
+            found.updated = now;
+            if (tagSlugs.length) {
+              found.tags = (found.tags || []).concat(tagSlugs);
+            }
+            remote.updated = now;
+            await commitPendingMeta(token);
+            await commitPostSitemap(token, title);
+            await commitBlog(token, remote, "blog: edit " + title.slice(0, 64));
+            blogData = remote;
+            ensureBlogPosts();
+            render();
+          } catch (err) {
+            if (editBackup) {
+              var cur = findLocalPost(editId);
+              if (cur) {
+                Object.keys(cur).forEach(function (k) {
+                  delete cur[k];
+                });
+                Object.assign(cur, editBackup);
+              } else {
+                ensureBlogPosts().unshift(editBackup);
+              }
+              render();
+            }
+            window.alert(err.message || String(err));
           }
-          if (!found) throw new Error("Пост не найден");
-          found.title = title;
-          found.type = type;
-          found.body = body;
-          found.slug = postSitemapId(title);
-          found.updated = now;
-          if (pendingTags.length) {
-            found.tags = (found.tags || []).concat(
-              pendingTags.map(function (t) {
-                return t.slug;
-              })
-            );
-          }
-          remote.updated = now;
-          await commitPendingMeta(token);
-          await commitPostSitemap(token, title);
-          await commitBlog(token, remote, "blog: edit " + title.slice(0, 64));
-          blogData = remote;
-          render();
-          clearEditorFields();
-          closeModal();
-        } else {
-          const post = {
-            id: "post-" + Date.now().toString(36),
-            title: title,
-            type: type,
-            body: body,
-            slug: postSitemapId(title),
-            created: now,
-            author: "oh_barbara",
-            tags: pendingTags.map(function (t) {
-              return t.slug;
-            }),
-          };
-          remote.posts.unshift(post);
+          delete syncLocks["save:" + editId];
+        })();
+        return;
+      }
+
+      const postId = "post-" + Date.now().toString(36);
+      if (syncLocks["save:" + postId]) return;
+      syncLocks["save:" + postId] = true;
+      const post = {
+        id: postId,
+        title: title,
+        type: type,
+        body: body,
+        slug: slug,
+        created: now,
+        author: "oh_barbara",
+        tags: tagSlugs.slice(),
+        pending: true,
+      };
+      ensureBlogPosts().unshift(post);
+      pendingTags = [];
+      clearEditorFields();
+      closeModal();
+      render();
+      try {
+        requestAnimationFrame(function () {
+          var el = document.getElementById(slug);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      } catch (e) {}
+
+      (async function () {
+        try {
+          pendingTags = tagsSnapshot.slice();
+          const remote = await fetchRemoteBlog(token);
+          remote.posts = Array.isArray(remote.posts) ? remote.posts : [];
+          remote.posts = remote.posts.filter(function (p) {
+            return p && p.id !== postId;
+          });
+          var clean = stripPending(post);
+          remote.posts.unshift(clean);
           remote.updated = now;
           await commitPendingMeta(token);
           await commitPostSitemap(token, title);
           await commitBlog(token, remote, "blog: " + title.slice(0, 72));
           blogData = remote;
+          ensureBlogPosts();
           render();
-          clearEditorFields();
-          if (saveOk) {
-            saveOk.hidden = false;
-            saveOk.textContent = "Опубликовано.";
-          }
+        } catch (err) {
+          removeLocalPost(postId);
+          render();
+          window.alert(err.message || String(err));
         }
-      } catch (err) {
-        if (saveErr) {
-          saveErr.hidden = false;
-          saveErr.textContent = err.message || String(err);
-        }
-      }
+        delete syncLocks["save:" + postId];
+      })();
     });
   }
 
