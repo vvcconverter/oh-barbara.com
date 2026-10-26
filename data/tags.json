@@ -6494,5 +6494,50 @@
     "slug": "кружок",
     "name": "кружок",
     "offtop": true
+  },
+  {
+    "slug": "охбарбара-пьяная",
+    "name": "ОхБарбара-пьяная",
+    "offtop": true
+  },
+  {
+    "slug": "ohbarbara-model",
+    "name": "ohbarbara-model",
+    "offtop": true
+  },
+  {
+    "slug": "ohbarbara-demonstration",
+    "name": "ohbarbara-demonstration",
+    "offtop": true
+  },
+  {
+    "slug": "ox-barbara-girlfriend",
+    "name": "Ox-Barbara-girlfriend",
+    "offtop": true
+  },
+  {
+    "slug": "ohbarbara-friends",
+    "name": "ohbarbara-friends",
+    "offtop": true
+  },
+  {
+    "slug": "друзья-охбарбара-тост",
+    "name": "Друзья-ОхБарбара-тост",
+    "offtop": true
+  },
+  {
+    "slug": "ох-барбара-все-друзья",
+    "name": "Ох-Барбара-все-друзья",
+    "offtop": true
+  },
+  {
+    "slug": "ох-барбара-друзья",
+    "name": "Ох-Барбара-друзья",
+    "offtop": true
+  },
+  {
+    "slug": "ох-барбара-рядом-с-мис-мира",
+    "name": "Ох-Барбара-рядом-с-мис-мира",
+    "offtop": true
   }
 ]
